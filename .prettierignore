@@ -1,0 +1,9 @@
+node_modules
+dist
+build
+coverage
+package-lock.json
+CHANGELOG.md
+
+# Auto-generated Hexlet check — must not be edited
+.github/workflows/hexlet-check.yml
