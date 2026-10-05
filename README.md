@@ -1,6 +1,5 @@
 # Календарь звонков
 
-
 [![hexlet-check](https://github.com/xxx3Vxxx/ai-for-developers-project-386/actions/workflows/hexlet-check.yml/badge.svg)](https://github.com/xxx3Vxxx/ai-for-developers-project-386/actions)
 
 Разработайте совместно с ИИ сервис для бронирования календаря
@@ -10,20 +9,42 @@
 
 ## Стек
 
-- Разное
+- TypeScript
+- Бекенд: [Fastify](https://fastify.dev/)
+- Фронтенд: [Vite](https://vite.dev/) + [React](https://react.dev/) + [Mantine](https://mantine.dev/)
+- Тесты: [Vitest](https://vitest.dev/)
+- Линтер и формат: ESLint + Prettier
+- Пакетный менеджер: npm (workspaces)
 
 ## Установка
 
-<!-- Опишите установку: клонирование, зависимости, переменные окружения -->
+Требуется Node.js >= 22.
 
 ```bash
 git clone https://github.com/xxx3Vxxx/ai-for-developers-project-386.git
 cd ai-for-developers-project-386
+npm install
 ```
 
 ## Использование
 
-<!-- Добавьте примеры запуска и запись asciinema — именно это смотрит работодатель -->
+Запуск бекенда и фронтенда одновременно:
+
+```bash
+npm run dev
+```
+
+- Бекенд: http://localhost:3000 (`GET /health` → `{"status":"ok"}`)
+- Фронтенд: http://localhost:5173
+
+Проверки:
+
+```bash
+npm test          # тесты (Vitest)
+npm run lint      # линтер (ESLint)
+npm run typecheck # проверка типов (tsc)
+npm run build     # сборка
+```
 
 ---
 
