@@ -32,7 +32,8 @@
 │   ├── release-please.yml   # релизы по Conventional Commits
 │   └── hexlet-check.yml     # автопроверка Хекслета — НЕ ТРОГАТЬ
 ├── eslint.config.mjs
-└── tsconfig.base.json
+├── tsconfig.base.json
+└── Makefile                 # удобные команды (make help)
 ```
 
 ## Требования
@@ -62,6 +63,20 @@ npm install
 | `npm run build`        | Сборка всех воркспейсов                                      |
 | `npm run format`       | Форматирование Prettier                                      |
 | `npm run format:check` | Проверка форматирования                                      |
+
+Те же действия доступны через `make` (полный список — `make help`):
+
+| Команда          | Что делает                          |
+| ---------------- | ----------------------------------- |
+| `make install`   | Установка зависимостей              |
+| `make dev`       | Бекенд и фронтенд одновременно      |
+| `make test`      | Тесты                               |
+| `make lint`      | Линтер                              |
+| `make typecheck` | Проверка типов                      |
+| `make build`     | Сборка                              |
+| `make check`     | Линтер + типы + тесты               |
+| `make ci`        | Полный прогон, как в GitHub Actions |
+| `make clean`     | Удалить `node_modules` и сборку     |
 
 Адреса при локальном запуске:
 

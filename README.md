@@ -46,6 +46,16 @@ npm run typecheck # проверка типов (tsc)
 npm run build     # сборка
 ```
 
+Те же команды доступны через Makefile:
+
+```bash
+make dev    # бекенд + фронтенд
+make test   # тесты
+make lint   # линтер
+make check  # линтер + типы + тесты
+make help   # список всех команд
+```
+
 ---
 
 <details>
