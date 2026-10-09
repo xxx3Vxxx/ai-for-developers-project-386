@@ -138,3 +138,21 @@ docs: describe release process
   переименовывайте репозиторий — это автопроверка Хекслета.
 - Держите `npm run lint`, `npm run typecheck` и `npm test` зелёными перед
   коммитом.
+
+## Agent skills
+
+### Трекер задач
+
+Задачи живут в GitHub Issues этого репозитория (через CLI `gh`). См.
+`docs/agents/issue-tracker.md`.
+
+### Метки триажа
+
+Пять канонических ролей триажа отображаются 1:1 на метки: `needs-triage`,
+`needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. См.
+`docs/agents/triage-labels.md`.
+
+### Документы предметной области
+
+Один контекст: один `GLOSSARY.md` + `docs/adr/` в корне репозитория. См.
+`docs/agents/domain.md`.
