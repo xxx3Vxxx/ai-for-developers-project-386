@@ -13,9 +13,6 @@ export function Header() {
             <Anchor component={Link} to="/book" c="dimmed">
               Записаться
             </Anchor>
-            <Anchor component={Link} to="/events" c="dimmed">
-              Предстоящие события
-            </Anchor>
           </Group>
         </Group>
       </Container>
