@@ -45,6 +45,14 @@ npm run dev:frontend # только фронтенд (Vite dev server)
 - Фронтенд: http://localhost:5173
 - Запросы фронтенда на `/api/*` проксируются на бекенд (`http://localhost:3000`).
 
+### Контракты API
+
+HTTP-контракт описан на [TypeSpec](https://typespec.io/) в `contracts/main.tsp`; из него
+генерируются OpenAPI 3.0.0 и типы (`contracts/generated/openapi.d.ts`), которыми
+пользуются бекенд и фронтенд. Артефакты не коммитятся: они создаются командой
+`npm run contracts:generate` (она же выполняется автоматически перед `typecheck`,
+`test` и `build`).
+
 Проверки:
 
 ```bash
@@ -61,6 +69,7 @@ npm run format:check # проверка форматирования
 
 ```bash
 make dev    # бекенд + фронтенд
+make contracts-generate # TypeSpec → OpenAPI → типы
 make test   # тесты
 make lint   # линтер
 make check  # линтер + типы + тесты

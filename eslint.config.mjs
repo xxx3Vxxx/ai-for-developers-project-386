@@ -13,6 +13,8 @@ export default tseslint.config(
       "**/coverage/**",
       "**/.vite/**",
       "**/*.tsbuildinfo",
+      "contracts/tsp-output/**",
+      "contracts/generated/**",
     ],
   },
   js.configs.recommended,

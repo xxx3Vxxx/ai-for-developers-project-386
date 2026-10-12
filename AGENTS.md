@@ -13,6 +13,8 @@
 - **Язык:** TypeScript
 - **Бекенд:** Fastify
 - **Фронтенд:** Vite + React + [Mantine](https://mantine.dev/)
+- **Контракты:** TypeSpec → OpenAPI 3.0.0 → типы (`openapi-typescript`), клиент
+  на `openapi-fetch` (ADR-0008)
 - **Тесты:** Vitest
 - **Линтер/формат:** ESLint (flat config) + Prettier, проверка типов через `tsc`
 - **Пакетный менеджер:** npm (workspaces)
@@ -21,6 +23,9 @@
 
 ```
 .
+├── contracts/               # TypeSpec-контракты HTTP API (ADR-0008)
+│   ├── main.tsp             # источник истины контракта
+│   └── tspconfig.yaml       # эмиттер OpenAPI, версия пинится как 3.0.0
 ├── backend/                 # Fastify API
 │   ├── src/app.ts           # buildApp() — сборка приложения (используется и в тестах)
 │   ├── src/server.ts        # точка входа, читает PORT/HOST
@@ -47,6 +52,10 @@
 `make help`. Ключевое:
 
 - `npm install` — установка зависимостей.
+- `npm run contracts:generate` — сгенерировать OpenAPI 3.0.0 и типы из
+  `contracts/main.tsp`; выполняется автоматически перед `typecheck`, `test` и
+  `build`. Артефакты (`contracts/tsp-output/`, `contracts/generated/`) не
+  коммитятся.
 - `make check` — линтер + типы + тесты (прогнать перед коммитом).
 - `make dev` — бекенд и фронтенд вместе.
 - backend :3000 (`GET /health` → `{"status":"ok"}`), frontend :5173; запросы

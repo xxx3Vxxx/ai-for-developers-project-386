@@ -6,6 +6,10 @@ dist/
 build/
 *.tsbuildinfo
 
+# Generated contracts (ADR-0008): коммитим только источник `*.tsp`
+contracts/tsp-output/
+contracts/generated/
+
 # Test output
 coverage/
 
