@@ -9,7 +9,8 @@ export PATH := $(HOME)/.local/node/bin:$(PATH)
 NPM ?= npm
 
 .PHONY: help install ci-install dev dev-backend dev-frontend build start \
-	test test-watch lint lint-fix typecheck format format-check check ci clean
+	test test-watch lint lint-fix typecheck format format-check check ci clean \
+	contracts-generate
 
 help: ## Показать список команд
 	@grep -hE '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -24,6 +25,9 @@ ci-install: ## Установить зависимости строго по loc
 
 dev: ## Запустить бекенд (:3000) и фронтенд (:5173)
 	$(NPM) run dev
+
+contracts-generate: ## Сгенерировать контракты (TypeSpec → OpenAPI 3.0.0 → типы)
+	$(NPM) run contracts:generate
 
 dev-backend: ## Запустить только бекенд (:3000)
 	$(NPM) run dev:backend
@@ -68,5 +72,6 @@ ci: ## Полный прогон, как в GitHub Actions
 	$(NPM) run build
 
 clean: ## Удалить node_modules и артефакты сборки
-	rm -rf node_modules backend/node_modules frontend/node_modules
+	rm -rf node_modules backend/node_modules frontend/node_modules contracts/node_modules
 	rm -rf backend/dist frontend/dist coverage backend/coverage frontend/coverage
+	rm -rf contracts/tsp-output contracts/generated
