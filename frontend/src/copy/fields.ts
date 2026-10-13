@@ -19,6 +19,10 @@ export const fieldMessages = {
     REQUIRED: "Выберите время",
     INVALID_FORMAT: "Некорректное время",
   },
+  date: {
+    REQUIRED: "Выберите дату",
+    INVALID_FORMAT: "Некорректная дата",
+  },
   eventTypeId: {
     REQUIRED: "Выберите тип события",
     INVALID_FORMAT: "Некорректный тип события",

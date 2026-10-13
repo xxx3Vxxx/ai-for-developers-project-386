@@ -185,21 +185,45 @@ describe("GET /api/event-types/:id/slots", () => {
     }
   });
 
-  it("отдаёт 400 VALIDATION_ERROR без date и при невалидной дате", async () => {
+  it("отдаёт 400 VALIDATION_ERROR с полем date, когда дата не передана", async () => {
     freezeNow();
     const app = buildApp({ config: loadConfig({}), db: createDb(":memory:") });
     try {
-      for (const url of [
-        "/api/event-types/et-15/slots",
-        "/api/event-types/et-15/slots?date=abc",
-        "/api/event-types/et-15/slots?date=2026-13-01",
-        "/api/event-types/et-15/slots?date=2026-10-32",
-      ]) {
-        const response = await app.inject({ method: "GET", url });
+      const response = await app.inject({
+        method: "GET",
+        url: "/api/event-types/et-15/slots",
+      });
+
+      expect(response.statusCode).toBe(400);
+      expect(response.json()).toEqual({
+        error: {
+          code: "VALIDATION_ERROR",
+          message: errorMessages.VALIDATION_ERROR,
+          fields: { date: "Выберите дату" },
+        },
+      });
+    } finally {
+      await app.close();
+    }
+  });
+
+  it("отдаёт 400 VALIDATION_ERROR с полем date при невалидной дате", async () => {
+    freezeNow();
+    const app = buildApp({ config: loadConfig({}), db: createDb(":memory:") });
+    try {
+      for (const date of ["abc", "2026-13-01", "2026-10-32"]) {
+        const response = await app.inject({
+          method: "GET",
+          url: `/api/event-types/et-15/slots?date=${date}`,
+        });
 
         expect(response.statusCode).toBe(400);
         expect(response.json()).toEqual({
-          error: { code: "VALIDATION_ERROR", message: errorMessages.VALIDATION_ERROR },
+          error: {
+            code: "VALIDATION_ERROR",
+            message: errorMessages.VALIDATION_ERROR,
+            fields: { date: "Некорректная дата" },
+          },
         });
       }
     } finally {

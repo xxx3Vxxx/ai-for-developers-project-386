@@ -3,6 +3,7 @@ import type { FastifyInstance } from "fastify";
 
 import type { Config } from "../config.js";
 import { ApiError } from "../errors.js";
+import { fieldMessages } from "../messages.js";
 import { buildDaySlots } from "../slots.js";
 import { addDays, dateInTimeZone, isCalendarDate } from "../time.js";
 
@@ -18,9 +19,12 @@ export function registerSlotRoutes(app: FastifyInstance, config: Config): void {
     const { id } = request.params as { id: string };
     const { date } = request.query as { date?: unknown };
 
-    // Текста по полю `date` нет в каноническом словаре (ADR-0015): параметр не
-    // относится к форме гостя, поэтому `VALIDATION_ERROR` идёт без `fields`.
-    if (!isCalendarDate(date)) throw new ApiError("VALIDATION_ERROR");
+    if (typeof date !== "string" || date.trim() === "") {
+      throw new ApiError("VALIDATION_ERROR", { date: fieldMessages.date.REQUIRED });
+    }
+    if (!isCalendarDate(date)) {
+      throw new ApiError("VALIDATION_ERROR", { date: fieldMessages.date.INVALID_FORMAT });
+    }
 
     const now = new Date();
     const today = dateInTimeZone(config.serviceTimezone, now);
