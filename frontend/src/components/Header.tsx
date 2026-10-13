@@ -15,6 +15,9 @@ export function Header() {
             <Anchor component={Link} to="/book" c="dimmed">
               {common.book}
             </Anchor>
+            <Anchor component={Link} to="/admin" c="dimmed">
+              {common.ownerCabinet}
+            </Anchor>
           </Group>
         </Group>
       </Container>
