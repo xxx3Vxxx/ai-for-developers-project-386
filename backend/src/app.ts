@@ -4,6 +4,7 @@ import { loadConfig, type Config } from "./config.js";
 import { createDb, type Db } from "./db.js";
 import { registerErrorHandling } from "./errors.js";
 import { registerConfigRoutes } from "./routes/config.js";
+import { registerBookingRoutes } from "./routes/bookings.js";
 import { registerEventTypeRoutes } from "./routes/event-types.js";
 import { registerSlotRoutes } from "./routes/slots.js";
 
@@ -47,6 +48,7 @@ export function buildApp({
   registerConfigRoutes(app, config);
   registerEventTypeRoutes(app);
   registerSlotRoutes(app, config);
+  registerBookingRoutes(app, config);
 
   return app;
 }

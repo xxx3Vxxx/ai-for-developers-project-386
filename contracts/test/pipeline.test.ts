@@ -51,4 +51,17 @@ describe("пайплайн контрактов", () => {
   it("генерирует типы с путём /api/event-types/{id}/slots", () => {
     expect(readArtifact(typesUrl)).toContain('"/api/event-types/{id}/slots"');
   });
+
+  it("описывает POST /api/bookings и схемы Booking и BookingRequest", () => {
+    const spec = readArtifact(specUrl);
+
+    expect(spec).toMatch(/^\s*\/api\/bookings:/m);
+    expect(spec).toMatch(/^\s*'201':$/m);
+    expect(spec).toMatch(/^\s*Booking:/m);
+    expect(spec).toMatch(/^\s*BookingRequest:/m);
+  });
+
+  it("генерирует типы с путём /api/bookings", () => {
+    expect(readArtifact(typesUrl)).toContain('"/api/bookings"');
+  });
 });

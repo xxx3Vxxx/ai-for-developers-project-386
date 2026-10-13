@@ -76,6 +76,51 @@ model SlotsResponse {
   slots: Slot[];
 }
 
+/** Тело создания брони (ADR-0010): `end` сервер считает сам из длительности типа. */
+model BookingRequest {
+  /** Идентификатор типа события. */
+  eventTypeId: string;
+
+  /** Начало слота — строка `start` из `GET /api/event-types/{id}/slots` (ADR-0004). */
+  start: offsetDateTime;
+
+  /** Имя гостя. */
+  guestName: string;
+
+  /** Email гостя. */
+  guestEmail: string;
+}
+
+/** Созданная бронь в форме чтения (ADR-0010). */
+model Booking {
+  /** Идентификатор брони. */
+  id: int32;
+
+  /** Идентификатор типа события. */
+  eventTypeId: string;
+
+  /** Название типа события. */
+  eventTypeTitle: string;
+
+  /** Начало брони — ISO 8601 со смещением зоны сервиса (ADR-0004). */
+  start: offsetDateTime;
+
+  /** Конец брони — ISO 8601 со смещением зоны сервиса (ADR-0004). */
+  end: offsetDateTime;
+
+  /** Имя гостя. */
+  guestName: string;
+
+  /** Email гостя. */
+  guestEmail: string;
+}
+
+/** Успех создания брони (201, ADR-0010): «голая» созданная бронь. */
+model BookingCreated {
+  @statusCode statusCode: 201;
+  ...Booking;
+}
+
 /** Тело ошибки в едином конверте (ADR-0005). */
 model ErrorDetail {
   /** Машинный код: `SCREAMING_SNAKE_CASE`. */
@@ -100,9 +145,13 @@ model InternalError {
   ...ErrorEnvelope;
 }
 
-/** Клиентская ошибка чтения (400): невалидный `date` или дата вне окна записи. */
+/**
+ * Клиентская ошибка (400): невалидный ввод, недоступный слот или дата вне окна
+ * записи. Машинный код различает `VALIDATION_ERROR`, `INVALID_SLOT` и
+ * `DATE_OUT_OF_WINDOW` (ADR-0005, ADR-0009, ADR-0010).
+ */
 @error
-model ReadClientError {
+model ClientError {
   @statusCode statusCode: 400;
   ...ErrorEnvelope;
 }
@@ -111,6 +160,20 @@ model ReadClientError {
 @error
 model EventTypeNotFoundError {
   @statusCode statusCode: 404;
+  ...ErrorEnvelope;
+}
+
+/** Конфликт записи: время уже занято (409, ADR-0007, ADR-0010). */
+@error
+model ConflictError {
+  @statusCode statusCode: 409;
+  ...ErrorEnvelope;
+}
+
+/** Сервис недоступен: чужая транзакция не отпустила базу (503, ADR-0007). */
+@error
+model ServiceUnavailableError {
+  @statusCode statusCode: 503;
   ...ErrorEnvelope;
 }
 
@@ -137,4 +200,16 @@ op listEventTypes(): EventType[] | InternalError;
 op listSlots(
   @path id: string,
   @query date: plainDate,
-): SlotsResponse | ReadClientError | EventTypeNotFoundError | InternalError;
+): SlotsResponse | ClientError | EventTypeNotFoundError | InternalError;
+
+/**
+ * Создаёт бронь: `end` сервер считает сам как `start + durationMinutes`
+ * (ADR-0010). Тело валидируется до обращения к базе; `start` должен быть
+ * началом слота сетки типа и лежать в окне записи, а занятость решает
+ * транзакция (ADR-0007).
+ */
+@route("/api/bookings")
+@post
+op createBooking(
+  @body body: BookingRequest,
+): BookingCreated | ClientError | EventTypeNotFoundError | ConflictError | ServiceUnavailableError | InternalError;
