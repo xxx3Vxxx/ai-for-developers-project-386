@@ -10,7 +10,7 @@ NPM ?= npm
 
 .PHONY: help install ci-install dev dev-backend dev-frontend build start \
 	test test-watch lint lint-fix typecheck format format-check check ci clean \
-	contracts-generate
+	contracts-generate docker-build docker-run
 
 help: ## Показать список команд
 	@grep -hE '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -28,6 +28,12 @@ dev: ## Запустить бекенд (:3000) и фронтенд (:5173)
 
 contracts-generate: ## Сгенерировать контракты (TypeSpec → OpenAPI 3.0.0 → типы)
 	$(NPM) run contracts:generate
+
+docker-build: ## Собрать прод-образ (один контейнер: API + статика)
+	docker build -t calendar:local .
+
+docker-run: ## Запустить прод-образ с томом под БД (:3000)
+	docker run --rm -p 3000:3000 -v calendar-data:/app/data calendar:local
 
 dev-backend: ## Запустить только бекенд (:3000)
 	$(NPM) run dev:backend

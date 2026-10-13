@@ -91,9 +91,27 @@ make test   # тесты
 make lint   # линтер
 make check  # линтер + типы + тесты
 make ci     # полный прогон, как в GitHub Actions
+make docker-build # собрать прод-образ
+make docker-run   # запустить прод-образ с томом под БД
 make clean  # удалить node_modules и артефакты сборки
 make help   # список всех команд
 ```
+
+### Прод-образ (Docker)
+
+Приложение поставляется одним образом из корневого `Dockerfile` (ADR-0014):
+контейнер отдаёт и API, и статику фронта, а `GET /` возвращает приложение.
+Контракты генерируются внутри сборки образа, `PORT`/`HOST` читаются из
+окружения, а SQLite лежит в `/app/data/calendar.sqlite`.
+
+```bash
+make docker-build            # docker build -t calendar:local .
+make docker-run              # docker run --rm -p 3000:3000 -v calendar-data:/app/data calendar:local
+```
+
+`docker-run` поднимает контейнер на `http://localhost:3000` с именованным томом
+под базу, поэтому данные не теряются между перезапусками. Без тома поднимается
+свежая БД (схема идемпотентна, сид — `INSERT OR IGNORE`).
 
 ---
 

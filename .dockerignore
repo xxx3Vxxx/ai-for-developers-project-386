@@ -1,0 +1,29 @@
+# Контекст docker build держим маленьким (ADR-0014): внутрь образа попадают
+# только источники, артефакты собираются стадиями Dockerfile.
+
+node_modules
+**/node_modules
+
+dist
+**/dist
+
+coverage
+**/coverage
+
+.git
+.github
+docs
+
+# Сгенерированные контракты не коммитятся и пересобираются стадией `contracts`.
+contracts/tsp-output
+contracts/generated
+
+# Локальная БД и логи.
+data
+**/data
+*.log
+
+# Локальное окружение.
+.env
+.env.*
+!.env.example
