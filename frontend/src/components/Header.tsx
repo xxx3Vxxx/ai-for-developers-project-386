@@ -1,17 +1,19 @@
 import { Anchor, Box, Container, Group, Text } from "@mantine/core";
 import { Link } from "react-router-dom";
 
+import { common } from "../copy/common";
+
 export function Header() {
   return (
     <Box component="header" style={{ borderBottom: "1px solid var(--mantine-color-gray-3)" }}>
       <Container size="lg" py="md">
         <Group justify="space-between" align="center">
           <Text component={Link} to="/" fw={700} c="inherit" style={{ textDecoration: "none" }}>
-            Calendar
+            {common.brand}
           </Text>
           <Group gap="lg">
             <Anchor component={Link} to="/book" c="dimmed">
-              Записаться
+              {common.book}
             </Anchor>
           </Group>
         </Group>
