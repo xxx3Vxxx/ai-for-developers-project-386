@@ -7,6 +7,13 @@
 Учебный проект Хекслета: https://ru.hexlet.io/programs/ai-for-developers
 Как это должно работать: https://files.hexlet.app/a/2ipc5m
 
+## Демо
+
+Опубликованное приложение: <https://xxx3vxxx-hexlet-ai-for-developers.onrender.com>
+
+> Сервис развёрнут на бесплатном плане Render и засыпает после простоя —
+> первый запрос может занять до минуты.
+
 ## Стек
 
 - TypeScript
