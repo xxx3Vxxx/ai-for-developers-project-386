@@ -17,19 +17,64 @@ type Booking = components["schemas"]["Booking"];
 
 const MINUTE = 60_000;
 
+/** Строка выборки предстоящих встреч: моменты — epoch-миллисекунды (ADR-0004). */
+interface BookingRow {
+  id: number;
+  eventTypeId: string;
+  eventTypeTitle: string;
+  start: number;
+  end: number;
+  guestName: string;
+  guestEmail: string;
+}
+
 /** Тело запроса — простой объект; иначе валидировать по полям нечего. */
 function isBodyObject(body: unknown): body is Record<string, unknown> {
   return typeof body === "object" && body !== null && !Array.isArray(body);
 }
 
 /**
- * Регистрирует `POST /api/bookings` — запись гостя (ADR-0007, ADR-0010).
- * Порядок проверок: структура и поля тела (все невалидные поля сразу) →
- * существование типа → `start` как начало слота сетки → дата в окне записи →
- * `start > now` → транзакция. Слотовые ошибки идут без `fields`: это
- * недоступность слота, а не ошибка поля формы.
+ * Регистрирует `GET /api/bookings` и `POST /api/bookings`.
+ *
+ * `GET` отдаёт предстоящие встречи владельца (ADR-0009): «предстоящая» — `end >
+ * now`, поэтому идущая прямо сейчас встреча остаётся в списке до завершения;
+ * порядок `start` asc, пагинации нет. Бронь отдаётся вместе с названием типа
+ * события, а моменты — как ISO 8601 со смещением зоны сервиса (ADR-0004).
+ *
+ * `POST` — запись гостя (ADR-0007, ADR-0010). Порядок проверок: структура и поля
+ * тела (все невалидные поля сразу) → существование типа → `start` как начало
+ * слота сетки → дата в окне записи → `start > now` → транзакция. Слотовые ошибки
+ * идут без `fields`: это недоступность слота, а не ошибка поля формы.
  */
 export function registerBookingRoutes(app: FastifyInstance, config: Config): void {
+  app.get("/api/bookings", async (): Promise<Booking[]> => {
+    const rows = app.db
+      .prepare(
+        `SELECT b.id AS id,
+                b.event_type_id AS eventTypeId,
+                e.title AS eventTypeTitle,
+                b.start AS start,
+                b.end AS end,
+                b.guest_name AS guestName,
+                b.guest_email AS guestEmail
+         FROM bookings AS b
+         JOIN event_types AS e ON e.id = b.event_type_id
+         WHERE b.end > ?
+         ORDER BY b.start ASC`,
+      )
+      .all(Date.now()) as BookingRow[];
+
+    return rows.map((row) => ({
+      id: row.id,
+      eventTypeId: row.eventTypeId,
+      eventTypeTitle: row.eventTypeTitle,
+      start: toZonedIso(config.serviceTimezone, new Date(row.start)),
+      end: toZonedIso(config.serviceTimezone, new Date(row.end)),
+      guestName: row.guestName,
+      guestEmail: row.guestEmail,
+    }));
+  });
+
   app.post("/api/bookings", async (request, reply): Promise<Booking> => {
     const body = request.body;
     if (!isBodyObject(body)) throw new ApiError("VALIDATION_ERROR");
