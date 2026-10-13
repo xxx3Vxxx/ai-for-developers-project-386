@@ -2,6 +2,7 @@ import Fastify, { type FastifyInstance } from "fastify";
 
 import { loadConfig, type Config } from "./config.js";
 import { createDb, type Db } from "./db.js";
+import { registerErrorHandling } from "./errors.js";
 import { registerConfigRoutes } from "./routes/config.js";
 
 declare module "fastify" {
@@ -34,6 +35,8 @@ export function buildApp({
   app.addHook("onClose", async () => {
     db.close();
   });
+
+  registerErrorHandling(app);
 
   app.get("/health", async () => {
     return { status: "ok" };
