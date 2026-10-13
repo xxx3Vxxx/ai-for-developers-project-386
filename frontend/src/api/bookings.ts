@@ -1,4 +1,5 @@
 import type { components } from "contracts";
+import { useCallback, useEffect, useState } from "react";
 
 import { api } from "./client";
 
@@ -39,4 +40,48 @@ export async function createBooking(body: BookingRequest): Promise<BookingResult
   } catch {
     return { ok: false, error: { code: "SERVICE_UNAVAILABLE", message: "" } };
   }
+}
+
+/** Состояние чтения предстоящих встреч владельца. */
+export type BookingsState =
+  { status: "loading" } | { status: "ready"; bookings: Booking[] } | { status: "error" };
+
+/** Читает `GET /api/bookings` сгенерированным клиентом (ADR-0008). */
+async function fetchBookings(): Promise<Booking[]> {
+  const { data, error } = await api.GET("/api/bookings");
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Предстоящие встречи для ленты `/admin` (ADR-0009, ADR-0012): «предстоящая» —
+ * `end > now`, порядок `start` asc. `retry` повторяет чтение.
+ */
+export function useBookings(): { state: BookingsState; retry: () => void } {
+  const [state, setState] = useState<BookingsState>({ status: "loading" });
+  const [attempt, setAttempt] = useState(0);
+
+  useEffect(() => {
+    let active = true;
+    setState({ status: "loading" });
+
+    fetchBookings().then(
+      (bookings) => {
+        if (active) setState({ status: "ready", bookings });
+      },
+      () => {
+        if (active) setState({ status: "error" });
+      },
+    );
+
+    return () => {
+      active = false;
+    };
+  }, [attempt]);
+
+  const retry = useCallback(() => {
+    setAttempt((value) => value + 1);
+  }, []);
+
+  return { state, retry };
 }

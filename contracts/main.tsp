@@ -203,6 +203,15 @@ op listSlots(
 ): SlotsResponse | ClientError | EventTypeNotFoundError | InternalError;
 
 /**
+ * Предстоящие встречи владельца: «предстоящая» — `end > now`, поэтому идущая
+ * прямо сейчас встреча остаётся в списке до завершения; порядок `start` asc, без
+ * пагинации (ADR-0009). Отдаёт брони вместе с названием типа события.
+ */
+@route("/api/bookings")
+@get
+op listBookings(): Booking[] | InternalError;
+
+/**
  * Создаёт бронь: `end` сервер считает сам как `start + durationMinutes`
  * (ADR-0010). Тело валидируется до обращения к базе; `start` должен быть
  * началом слота сетки типа и лежать в окне записи, а занятость решает
