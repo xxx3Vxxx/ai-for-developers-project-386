@@ -20,16 +20,34 @@ type SlotsResponse = components["schemas"]["SlotsResponse"];
  */
 export const api = {
   GET: vi.fn(),
+  POST: vi.fn(),
 };
 
 /** Сбрасывает вызовы и настройки мока клиента; вызывать в `beforeEach`. */
 export function resetApiMock(): void {
   api.GET.mockReset();
+  api.POST.mockReset();
 }
 
 /** Успешный ответ в форме, которую возвращает `openapi-fetch`. */
 export function mockResponse<T>(data: T) {
   return { data, response: new Response(null, { status: 200 }) };
+}
+
+/**
+ * Ошибочный ответ в форме `openapi-fetch`: `error` — разобранный конверт
+ * `{ error: { code, message, fields? } }` (ADR-0005), `response` — статус.
+ */
+export function mockErrorResponse(
+  code: string,
+  message: string,
+  status = 400,
+  fields?: Record<string, string>,
+) {
+  return {
+    error: { error: { code, message, ...(fields ? { fields } : {}) } },
+    response: new Response(null, { status }),
+  };
 }
 
 /**

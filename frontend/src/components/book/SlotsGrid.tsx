@@ -3,7 +3,7 @@ import { Alert, Button, SimpleGrid, Skeleton, Stack, Text } from "@mantine/core"
 import type { Slot, SlotsState } from "../../api/slots";
 import { book } from "../../copy/book";
 import { common } from "../../copy/common";
-import { dateLabel } from "../../format/date";
+import { dateLabel, instantTime } from "../../format/date";
 
 interface SlotsGridProps {
   /** Состояние чтения сетки. */
@@ -90,7 +90,7 @@ export function SlotsGrid({
             onClick={() => onSelect(slot)}
             style={slot.available ? undefined : { textDecoration: "line-through" }}
           >
-            {slot.start.slice(11, 16)}
+            {instantTime(slot.start)}
           </Button>
         );
       })}

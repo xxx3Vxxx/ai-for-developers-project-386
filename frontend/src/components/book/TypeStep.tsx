@@ -3,6 +3,7 @@ import { Alert, Badge, Button, Group, Loader, Radio, Stack, Text } from "@mantin
 import type { EventType, EventTypesState } from "../../api/event-types";
 import { book } from "../../copy/book";
 import { common } from "../../copy/common";
+import type { StepNotice } from "./StepNotice";
 
 interface TypeStepProps {
   /** Состояние чтения справочника типов. */
@@ -13,13 +14,15 @@ interface TypeStepProps {
   onSelect: (eventType: EventType) => void;
   /** Повторное чтение справочника при ошибке. */
   onRetry: () => void;
+  /** Уведомление о возврате на шаг из-за устаревания типа (ADR-0015). */
+  notice?: StepNotice | null;
 }
 
 /**
  * Шаг 1 мастера «Тип»: список доступных типов событий с длительностью.
  * Выбор — радиогруппа (ADR-0016), состояние загрузки и ошибки чтения — здесь же.
  */
-export function TypeStep({ state, selectedId, onSelect, onRetry }: TypeStepProps) {
+export function TypeStep({ state, selectedId, onSelect, onRetry, notice }: TypeStepProps) {
   if (state.status === "loading") {
     return <Loader role="status" aria-label={common.loading} mt="md" />;
   }
@@ -38,35 +41,41 @@ export function TypeStep({ state, selectedId, onSelect, onRetry }: TypeStepProps
   }
 
   return (
-    <Radio.Group
-      aria-label={book.typeStep.groupLabel}
-      value={selectedId ?? undefined}
-      onChange={(value) => {
-        const eventType = state.eventTypes.find((item) => item.id === value);
-        if (eventType) onSelect(eventType);
-      }}
-      mt="md"
-    >
-      <Stack gap="sm">
-        {state.eventTypes.map((eventType) => (
-          <Radio.Card key={eventType.id} value={eventType.id} withBorder radius="md" p="md">
-            <Group justify="space-between" wrap="nowrap" align="flex-start">
-              <Group gap="sm" wrap="nowrap" align="flex-start">
-                <Radio.Indicator />
-                <div>
-                  <Text fw={600}>{eventType.title}</Text>
-                  <Text size="sm" c="dimmed">
-                    {eventType.description}
-                  </Text>
-                </div>
+    <Stack gap="md">
+      {notice ? (
+        <Alert role="status" color="orange" title={notice.title}>
+          <Text size="sm">{notice.description}</Text>
+        </Alert>
+      ) : null}
+      <Radio.Group
+        aria-label={book.typeStep.groupLabel}
+        value={selectedId ?? undefined}
+        onChange={(value) => {
+          const eventType = state.eventTypes.find((item) => item.id === value);
+          if (eventType) onSelect(eventType);
+        }}
+      >
+        <Stack gap="sm">
+          {state.eventTypes.map((eventType) => (
+            <Radio.Card key={eventType.id} value={eventType.id} withBorder radius="md" p="md">
+              <Group justify="space-between" wrap="nowrap" align="flex-start">
+                <Group gap="sm" wrap="nowrap" align="flex-start">
+                  <Radio.Indicator />
+                  <div>
+                    <Text fw={600}>{eventType.title}</Text>
+                    <Text size="sm" c="dimmed">
+                      {eventType.description}
+                    </Text>
+                  </div>
+                </Group>
+                <Badge variant="light" radius="sm">
+                  {book.duration(eventType.durationMinutes)}
+                </Badge>
               </Group>
-              <Badge variant="light" radius="sm">
-                {book.duration(eventType.durationMinutes)}
-              </Badge>
-            </Group>
-          </Radio.Card>
-        ))}
-      </Stack>
-    </Radio.Group>
+            </Radio.Card>
+          ))}
+        </Stack>
+      </Radio.Group>
+    </Stack>
   );
 }
