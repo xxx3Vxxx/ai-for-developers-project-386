@@ -7,7 +7,7 @@ export function Header() {
   return (
     <Box component="header" style={{ borderBottom: "1px solid var(--mantine-color-gray-3)" }}>
       <Container size="lg" py="md">
-        <Group justify="space-between" align="center">
+        <Group component="nav" aria-label={common.nav} justify="space-between" align="center">
           <Text component={Link} to="/" fw={700} c="inherit" style={{ textDecoration: "none" }}>
             {common.brand}
           </Text>

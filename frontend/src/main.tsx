@@ -15,7 +15,7 @@ if (!container) {
 
 createRoot(container).render(
   <StrictMode>
-    <MantineProvider defaultColorScheme="auto">
+    <MantineProvider defaultColorScheme="auto" theme={{ respectReducedMotion: true }}>
       <BrowserRouter>
         <App />
       </BrowserRouter>

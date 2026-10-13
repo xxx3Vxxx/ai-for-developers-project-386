@@ -1,4 +1,5 @@
 import { Alert, Button, Container, Grid, Group, Stack, Text, Title } from "@mantine/core";
+import { useDocumentTitle } from "@mantine/hooks";
 import { useState } from "react";
 
 import { useBookings } from "../api/bookings";
@@ -22,6 +23,8 @@ import { workWindowMinutes } from "../validation";
  * живёт в выдвижной панели и по успеху обновляет рельс.
  */
 export function AdminPage() {
+  useDocumentTitle(common.documentTitle(admin.title));
+
   const types = useEventTypes();
   const bookings = useBookings();
   const config = useConfig();
@@ -102,10 +105,10 @@ export function AdminPage() {
           </Alert>
         ) : (
           <Grid gap="xl">
-            <Grid.Col span={{ base: 12, md: 3 }}>
+            <Grid.Col span={{ base: 12, sm: 3 }}>
               <TypeRail eventTypes={eventTypes} />
             </Grid.Col>
-            <Grid.Col span={{ base: 12, md: 9 }}>
+            <Grid.Col span={{ base: 12, sm: 9 }}>
               <MeetingFeed bookings={upcoming} today={today} />
             </Grid.Col>
           </Grid>

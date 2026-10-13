@@ -1,4 +1,5 @@
 import { Button, Container, Group, Stepper, Stack, Title } from "@mantine/core";
+import { useDocumentTitle } from "@mantine/hooks";
 import { useEffect, useRef, useState, type ReactNode, type Ref } from "react";
 
 import { createBooking, type Booking, type BookingError } from "../api/bookings";
@@ -14,6 +15,7 @@ import type { StepNotice } from "../components/book/StepNotice";
 import { SuccessScreen } from "../components/book/SuccessScreen";
 import { TypeStep } from "../components/book/TypeStep";
 import { book } from "../copy/book";
+import { common } from "../copy/common";
 import { fullDateLabel, instantDate, instantTime } from "../format/date";
 import { validateGuestEmail, validateGuestName } from "../validation";
 
@@ -58,6 +60,8 @@ function StepPanel({ ref, title, children }: StepPanelProps) {
  * «Подтверждение» и экран успеха (#30) с обработкой ошибок записи (ADR-0015).
  */
 export function BookingPage() {
+  useDocumentTitle(common.documentTitle(book.title));
+
   const [active, setActive] = useState(TYPE_STEP);
   const [selectedType, setSelectedType] = useState<EventType | null>(null);
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
