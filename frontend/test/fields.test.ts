@@ -68,6 +68,11 @@ describe("зеркальная валидация полей", () => {
     expect(validateGuestName("Имя\nФамилия").message).toBe(messages.guestName.INVALID_FORMAT);
   });
 
+  it("имя: отклоняет C1 и разделители строк U+2028/U+2029", () => {
+    expect(validateGuestName("Имя\u0085Фамилия").message).toBe(messages.guestName.INVALID_FORMAT);
+    expect(validateGuestName("Имя\u2028Фамилия").message).toBe(messages.guestName.INVALID_FORMAT);
+  });
+
   it("имя: регистр и внутренние пробелы сохраняются, края обрезаются", () => {
     expect(validateGuestName("  Иван  Петров ")).toEqual({ value: "Иван  Петров" });
   });

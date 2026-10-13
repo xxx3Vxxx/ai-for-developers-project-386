@@ -19,13 +19,14 @@ const EMAIL_LOCAL_MAX = 64;
 const DURATION_STEP = 15;
 const DURATION_MIN = 15;
 
-/** Есть ли управляющие символы, включая переводы строк (запрещены в имени). */
+/**
+ * Управляющие символы (C0, C1, DEL) и переводы строк — разделитель строк
+ * `U+2028` и разделитель абзацев `U+2029` (запрещены в имени).
+ */
+const FORBIDDEN_NAME_CHARS = /[\p{Cc}\p{Zl}\p{Zp}]/u;
+
 function hasControlChars(value: string): boolean {
-  for (const char of value) {
-    const code = char.codePointAt(0) ?? 0;
-    if (code <= 0x1f || code === 0x7f) return true;
-  }
-  return false;
+  return FORBIDDEN_NAME_CHARS.test(value);
 }
 
 /** Прагматичный email: local без пробелов и кавычек, домен с точкой и TLD ≥ 2. */

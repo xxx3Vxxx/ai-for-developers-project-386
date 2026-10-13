@@ -30,6 +30,12 @@ describe("валидация имени гостя", () => {
     expect(validateGuestName(42).message).toBe(messages.guestName.INVALID_FORMAT);
   });
 
+  it("INVALID_FORMAT на C1 и разделителях строк U+2028/U+2029", () => {
+    expect(validateGuestName("Имя\u0085Фамилия").message).toBe(messages.guestName.INVALID_FORMAT);
+    expect(validateGuestName("Имя\u2028Фамилия").message).toBe(messages.guestName.INVALID_FORMAT);
+    expect(validateGuestName("Имя\u2029Фамилия").message).toBe(messages.guestName.INVALID_FORMAT);
+  });
+
   it("приоритет: TOO_LONG важнее INVALID_FORMAT", () => {
     expect(validateGuestName(`\n${"я".repeat(101)}`).message).toBe(messages.guestName.TOO_LONG);
   });

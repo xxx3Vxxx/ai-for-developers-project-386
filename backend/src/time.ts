@@ -78,6 +78,12 @@ export function dateInTimeZone(timeZone: string, instant: Date): string {
   return `${pad(parts.year, 4)}-${pad(parts.month)}-${pad(parts.day)}`;
 }
 
+/** Минуты от локальной полуночи зоны сервиса для момента (ADR-0004). */
+export function zonedMinutesFromMidnight(timeZone: string, instant: Date): number {
+  const parts = zonedParts(timeZone, instant);
+  return parts.hour * 60 + parts.minute;
+}
+
 /** Момент → ISO 8601 со смещением зоны сервиса (ADR-0004). */
 export function toZonedIso(timeZone: string, instant: Date): string {
   const parts = zonedParts(timeZone, instant);
