@@ -16,6 +16,8 @@ function documentTitle(page: string): string {
 export const common = {
   brand,
   book: "Записаться",
+  /** Ссылка шапки в кабинет владельца `/admin` (ADR-0001, ADR-0012). */
+  ownerCabinet: "Кабинет владельца",
   loading: "Загрузка…",
   /** Доступное имя основной навигации в шапке (ADR-0016). */
   nav: "Основная навигация",

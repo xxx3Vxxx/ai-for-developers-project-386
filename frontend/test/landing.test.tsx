@@ -109,6 +109,12 @@ describe("шапка", () => {
     expect(screen.getByRole("link", { name: common.book })).toHaveAttribute("href", "/book");
   });
 
+  it("ведёт в кабинет владельца", async () => {
+    await renderLanding();
+
+    expect(screen.getByRole("link", { name: common.ownerCabinet })).toHaveAttribute("href", "/admin");
+  });
+
   it("показывает бренд «Календарь звонков»", async () => {
     await renderLanding();
 
