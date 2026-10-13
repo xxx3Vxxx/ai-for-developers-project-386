@@ -32,6 +32,8 @@
 │   └── test/smoke.test.ts   # дымовой тест
 ├── frontend/                # Vite + React + Mantine
 │   └── src/App.tsx
+├── Dockerfile               # прод-образ: API + статика фронта (ADR-0014)
+├── .dockerignore            # контекст сборки образа
 ├── .github/workflows/
 │   ├── ci.yml               # линтер, типы, тесты, сборка
 │   ├── release-please.yml   # релизы по Conventional Commits
@@ -58,6 +60,8 @@
   коммитятся.
 - `make check` — линтер + типы + тесты (прогнать перед коммитом).
 - `make dev` — бекенд и фронтенд вместе.
+- `make docker-build` / `make docker-run` — собрать и запустить прод-образ
+  (API + статика фронта в одном контейнере, ADR-0014).
 - backend :3000 (`GET /health` → `{"status":"ok"}`), frontend :5173; запросы
   фронтенда на `/api/*` проксируются на backend.
 
