@@ -1,4 +1,5 @@
 import { durationTooLargeMessage, fieldMessages } from "./messages.js";
+import { hhmmToMinutes } from "./time.js";
 
 /**
  * Ручной валидатор полей (ADR-0005), зеркало которого живёт на фронте
@@ -34,11 +35,6 @@ const DOMAIN_LABEL = /^[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?$/;
 
 /** ISO 8601 с секундами и смещением зоны либо `Z` (ADR-0004). */
 const ISO_WITH_OFFSET = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})$/;
-
-function hhmmToMinutes(value: string): number {
-  const [hours, minutes] = value.split(":").map(Number);
-  return hours * 60 + minutes;
-}
 
 /** Длина рабочего окна в минутах; верхняя граница длительности (ADR-0003). */
 export function workWindowMinutes(start: string, end: string): number {

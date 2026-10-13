@@ -1,3 +1,4 @@
+import type { components } from "contracts";
 import { MantineProvider } from "@mantine/core";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -5,12 +6,16 @@ import { MemoryRouter } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { App } from "../src/App";
+import type { ServiceConfig } from "../src/api/config";
 import type { EventType } from "../src/api/event-types";
 import { book } from "../src/copy/book";
 import { common } from "../src/copy/common";
-import { api, mockEventTypes, resetApiMock } from "./helpers/api";
+import { api, mockApi, resetApiMock } from "./helpers/api";
 
 vi.mock("../src/api/client", () => import("./helpers/api"));
+
+type Slot = components["schemas"]["Slot"];
+type SlotsResponse = components["schemas"]["SlotsResponse"];
 
 const eventTypes: EventType[] = [
   {
@@ -27,6 +32,28 @@ const eventTypes: EventType[] = [
   },
 ];
 
+const config: ServiceConfig = {
+  timezone: "Europe/Moscow",
+  workingWindow: { start: "09:00", end: "18:00" },
+  bookingWindowDays: 14,
+  today: "2026-10-14",
+};
+
+const slots: Slot[] = [
+  { start: "2026-10-14T09:00:00+03:00", end: "2026-10-14T09:15:00+03:00", available: true },
+];
+
+const slotsResponse: SlotsResponse = { eventTypeId: "et-15", date: config.today, slots };
+
+/** Мок config, справочника типов и сетки слотов одной настройкой. */
+function mockDefaults(): void {
+  mockApi({
+    "/api/config": config,
+    "/api/event-types": eventTypes,
+    "/api/event-types/{id}/slots": slotsResponse,
+  });
+}
+
 function renderBook() {
   return render(
     <MantineProvider>
@@ -40,7 +67,7 @@ function renderBook() {
 describe("мастер записи /book", () => {
   beforeEach(() => {
     resetApiMock();
-    mockEventTypes(eventTypes);
+    mockDefaults();
   });
 
   it("показывает четыре шага мастера", async () => {
@@ -65,14 +92,18 @@ describe("мастер записи /book", () => {
   });
 
   it("берёт список типов из GET /api/event-types", async () => {
-    mockEventTypes([
-      {
-        id: "et-60",
-        title: "Часовая встреча",
-        description: "Глубокий разбор.",
-        durationMinutes: 60,
-      },
-    ]);
+    mockApi({
+      "/api/config": config,
+      "/api/event-types": [
+        {
+          id: "et-60",
+          title: "Часовая встреча",
+          description: "Глубокий разбор.",
+          durationMinutes: 60,
+        },
+      ],
+      "/api/event-types/{id}/slots": slotsResponse,
+    });
 
     renderBook();
 
@@ -94,7 +125,7 @@ describe("мастер записи /book", () => {
 
     await user.click(next);
 
-    expect(screen.getByText(book.stepInProgress)).toBeInTheDocument();
+    expect(await screen.findByRole("radiogroup", { name: /окно записи/ })).toBeInTheDocument();
   });
 
   it("переносит фокус на заголовок нового шага при «Далее»", async () => {

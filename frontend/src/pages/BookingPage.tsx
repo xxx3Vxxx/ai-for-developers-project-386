@@ -1,12 +1,17 @@
 import { Button, Container, Group, Stepper, Stack, Text, Title } from "@mantine/core";
 import { useEffect, useRef, useState, type ReactNode, type Ref } from "react";
 
+import { useConfig } from "../api/config";
 import type { EventType } from "../api/event-types";
 import { useEventTypes } from "../api/event-types";
+import { useSlots } from "../api/slots";
+import { DateTimeStep } from "../components/book/DateTimeStep";
 import { TypeStep } from "../components/book/TypeStep";
 import { book } from "../copy/book";
 
 const STEP_COUNT = Object.keys(book.steps).length;
+/** Индекс шага «Дата и время». */
+const DATE_TIME_STEP = 1;
 
 interface StepPanelProps {
   /** Заголовок шага; получает фокус при переходе «Назад»/«Далее» (ADR-0016). */
@@ -30,13 +35,21 @@ function StepPanel({ ref, title, children }: StepPanelProps) {
  * Мастер записи `/book`: линейный `Stepper` из четырёх шагов с навигацией
  * «Назад»/«Далее» (ADR-0011). `Stepper` — только индикатор, недостигнутые шаги
  * не фокусируемы, а фокус при переходах уезжает на заголовок нового шага
- * (ADR-0016). Реализован шаг «Тип» (#27); остальные — каркас, который наполняют
- * следующие тикеты.
+ * (ADR-0016). Реализованы шаги «Тип» (#27) и «Дата и время» (#28); остальные —
+ * каркас, который наполняют следующие тикеты.
  */
 export function BookingPage() {
   const [active, setActive] = useState(0);
   const [selectedType, setSelectedType] = useState<EventType | null>(null);
-  const { state, retry } = useEventTypes();
+  const [selectedDate, setSelectedDate] = useState<string | null>(null);
+  const [selectedStart, setSelectedStart] = useState<string | null>(null);
+
+  const { state: typesState, retry: retryTypes } = useEventTypes();
+  const { state: configState, retry: retryConfig } = useConfig();
+
+  // Пока дата не выбрана, сетка строится для сегодняшнего дня из конфигурации.
+  const date = selectedDate ?? (configState.status === "ready" ? configState.config.today : null);
+  const { state: slotsState, retry: retrySlots } = useSlots(selectedType?.id ?? null, date);
 
   const headingRef = useRef<HTMLHeadingElement>(null);
   const previousActive = useRef(active);
@@ -50,8 +63,29 @@ export function BookingPage() {
     }
   }, [active]);
 
-  // Шаг «Тип» требует выбора; дальше шаги-заглушки листаются до последнего.
-  const canGoNext = active === 0 ? selectedType !== null : active < STEP_COUNT - 1;
+  function selectType(eventType: EventType) {
+    setSelectedType(eventType);
+    // Смена типа пересобирает сетку — прежний слот перестаёт быть валидным.
+    setSelectedStart(null);
+  }
+
+  function selectDate(next: string) {
+    setSelectedDate(next);
+    // Другая дата — другая сетка: прежний слот перестаёт быть валидным.
+    setSelectedStart(null);
+  }
+
+  // Шаг «Тип» требует выбора типа, «Дата и время» — доступного выбранного слота;
+  // дальше — заглушки, которые листаются до последнего шага.
+  const selectedSlotAvailable =
+    slotsState.status === "ready" &&
+    slotsState.slots.some((slot) => slot.start === selectedStart && slot.available);
+  const canGoNext =
+    active === 0
+      ? selectedType !== null
+      : active === DATE_TIME_STEP
+        ? selectedSlotAvailable
+        : active < STEP_COUNT - 1;
 
   return (
     <Container size="md" py="xl">
@@ -61,10 +95,10 @@ export function BookingPage() {
           <Stepper.Step label={book.steps.type.label} description={book.steps.type.description}>
             <StepPanel ref={headingRef} title={book.steps.type.label}>
               <TypeStep
-                state={state}
+                state={typesState}
                 selectedId={selectedType?.id ?? null}
-                onSelect={setSelectedType}
-                onRetry={retry}
+                onSelect={selectType}
+                onRetry={retryTypes}
               />
             </StepPanel>
           </Stepper.Step>
@@ -73,7 +107,16 @@ export function BookingPage() {
             description={book.steps.dateTime.description}
           >
             <StepPanel ref={headingRef} title={book.steps.dateTime.label}>
-              <Text c="dimmed">{book.stepInProgress}</Text>
+              <DateTimeStep
+                configState={configState}
+                onRetryConfig={retryConfig}
+                selectedDate={selectedDate}
+                onSelectDate={selectDate}
+                selectedStart={selectedStart}
+                onSelectStart={(slot) => setSelectedStart(slot.start)}
+                slotsState={slotsState}
+                onRetrySlots={retrySlots}
+              />
             </StepPanel>
           </Stepper.Step>
           <Stepper.Step

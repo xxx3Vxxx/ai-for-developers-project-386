@@ -4,6 +4,7 @@ import { vi } from "vitest";
 import type { ServiceConfig } from "../../src/api/config";
 
 type EventType = components["schemas"]["EventType"];
+type SlotsResponse = components["schemas"]["SlotsResponse"];
 
 /**
  * Мок сгенерированного клиента (`openapi-fetch`, ADR-0008) для компонентных
@@ -14,7 +15,8 @@ type EventType = components["schemas"]["EventType"];
  * ```
  *
  * Дальше ответы настраиваются через `api.GET` (например, `mockConfig`,
- * `mockEventTypes`), а между тестами состояние сбрасывается `resetApiMock()`.
+ * `mockEventTypes`, `mockSlots`) либо напрямую через `api.GET.mockImplementation`,
+ * а между тестами состояние сбрасывается `resetApiMock()`.
  */
 export const api = {
   GET: vi.fn(),
@@ -26,7 +28,7 @@ export function resetApiMock(): void {
 }
 
 /** Успешный ответ в форме, которую возвращает `openapi-fetch`. */
-function ok<T>(data: T) {
+export function mockResponse<T>(data: T) {
   return { data, response: new Response(null, { status: 200 }) };
 }
 
@@ -36,7 +38,7 @@ function ok<T>(data: T) {
  */
 export function mockApi(routes: Record<string, unknown>): void {
   api.GET.mockImplementation(async (path: string) => {
-    if (path in routes) return ok(routes[path]);
+    if (path in routes) return mockResponse(routes[path]);
     throw new Error(`Незамоканный GET ${path}`);
   });
 }
@@ -49,4 +51,9 @@ export function mockConfig(config: ServiceConfig): void {
 /** Настраивает `GET /api/event-types` на успешный ответ со списком типов. */
 export function mockEventTypes(eventTypes: EventType[]): void {
   mockApi({ "/api/event-types": eventTypes });
+}
+
+/** Настраивает `GET /api/event-types/{id}/slots` на успешный ответ с сеткой. */
+export function mockSlots(response: SlotsResponse): void {
+  mockApi({ "/api/event-types/{id}/slots": response });
 }

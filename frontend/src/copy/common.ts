@@ -12,3 +12,12 @@ export const common = {
     retry: "Повторить",
   },
 } as const;
+
+/** Склонение слова «день» по числу: 1 день, 2 дня, 5 дней. */
+export function daysLabel(days: number): string {
+  const mod10 = days % 10;
+  const mod100 = days % 100;
+  if (mod10 === 1 && mod100 !== 11) return "день";
+  if (mod10 >= 2 && mod10 <= 4 && (mod100 < 12 || mod100 > 14)) return "дня";
+  return "дней";
+}

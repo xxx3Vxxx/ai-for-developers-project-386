@@ -39,4 +39,16 @@ describe("пайплайн контрактов", () => {
   it("генерирует типы с путём /api/event-types", () => {
     expect(readArtifact(typesUrl)).toContain('"/api/event-types"');
   });
+
+  it("описывает GET /api/event-types/{id}/slots и схему SlotsResponse", () => {
+    const spec = readArtifact(specUrl);
+
+    expect(spec).toMatch(/^\s*\/api\/event-types\/\{id\}\/slots:/m);
+    expect(spec).toMatch(/^\s*SlotsResponse:/m);
+    expect(spec).toMatch(/^\s*Slot:/m);
+  });
+
+  it("генерирует типы с путём /api/event-types/{id}/slots", () => {
+    expect(readArtifact(typesUrl)).toContain('"/api/event-types/{id}/slots"');
+  });
 });
