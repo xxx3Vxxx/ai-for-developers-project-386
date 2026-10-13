@@ -1,4 +1,4 @@
-import type { Db } from "./db.js";
+import { sqliteErrorCode, type Db } from "./db.js";
 
 /** Данные брони, уже нормализованные и проверенные роутом. */
 export interface CreateBookingInput {
@@ -15,14 +15,6 @@ export interface CreateBookingInput {
 /** Исход попытки записи: успех, конфликт по времени или занятая база. */
 export type CreateBookingResult =
   { status: "created"; id: number } | { status: "conflict" } | { status: "busy" };
-
-/** Машинный код ошибки SQLite: better-sqlite3 кладёт расширенный код в `code`. */
-function sqliteCode(error: unknown): string | undefined {
-  if (error instanceof Error && "code" in error) {
-    return (error as { code?: string }).code;
-  }
-  return undefined;
-}
 
 /**
  * Создаёт бронь под write-lock (ADR-0007): транзакция `BEGIN IMMEDIATE` берёт
@@ -49,7 +41,7 @@ export function createBooking(db: Db, input: CreateBookingInput): CreateBookingR
   try {
     return write.immediate(input);
   } catch (error) {
-    const code = sqliteCode(error);
+    const code = sqliteErrorCode(error);
     // Нарушение UNIQUE(start) по смыслу и есть конфликт, а не 500 (ADR-0007).
     if (code === "SQLITE_CONSTRAINT_UNIQUE") return { status: "conflict" };
     // Чужая транзакция не отпустила базу за timeout: перегрузка, а не конфликт.
