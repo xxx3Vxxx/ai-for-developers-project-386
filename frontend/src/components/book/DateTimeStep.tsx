@@ -6,6 +6,7 @@ import { book } from "../../copy/book";
 import { common } from "../../copy/common";
 import { DateStrip } from "./DateStrip";
 import { SlotsGrid } from "./SlotsGrid";
+import type { StepNotice } from "./StepNotice";
 
 interface DateTimeStepProps {
   /** Состояние чтения параметров сервиса (зона, окно записи, сегодня). */
@@ -24,6 +25,8 @@ interface DateTimeStepProps {
   slotsState: SlotsState;
   /** Повторное чтение сетки при ошибке. */
   onRetrySlots: () => void;
+  /** Уведомление о возврате на шаг из-за устаревания слота или даты (ADR-0015). */
+  notice?: StepNotice | null;
 }
 
 /**
@@ -40,6 +43,7 @@ export function DateTimeStep({
   onSelectStart,
   slotsState,
   onRetrySlots,
+  notice,
 }: DateTimeStepProps) {
   if (configState.status === "loading") {
     return <Loader role="status" aria-label={common.loading} mt="md" />;
@@ -63,6 +67,11 @@ export function DateTimeStep({
 
   return (
     <Stack gap="md">
+      {notice ? (
+        <Alert role="status" color="orange" title={notice.title}>
+          <Text size="sm">{notice.description}</Text>
+        </Alert>
+      ) : null}
       <DateStrip
         today={config.today}
         days={config.bookingWindowDays}

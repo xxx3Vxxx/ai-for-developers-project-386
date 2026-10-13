@@ -54,3 +54,16 @@ export function fullDateLabel(date: string): string {
   }).format(toUtcDate(date));
   return `${dateLabel(date)}, ${weekday}`;
 }
+
+/**
+ * Локальная дата ISO-момента зоны сервиса: «2026-10-14». Момент уже несёт
+ * смещение зоны сервиса, поэтому срез не зависит от зоны машины гостя (ADR-0004).
+ */
+export function instantDate(instant: string): string {
+  return instant.slice(0, 10);
+}
+
+/** Локальное время ISO-момента зоны сервиса: «09:00». */
+export function instantTime(instant: string): string {
+  return instant.slice(11, 16);
+}
