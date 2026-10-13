@@ -28,4 +28,15 @@ describe("пайплайн контрактов", () => {
   it("генерирует типы с путём /api/config", () => {
     expect(readArtifact(typesUrl)).toContain('"/api/config"');
   });
+
+  it("описывает GET /api/event-types и схему EventType", () => {
+    const spec = readArtifact(specUrl);
+
+    expect(spec).toMatch(/^\s*\/api\/event-types:/m);
+    expect(spec).toMatch(/^\s*EventType:/m);
+  });
+
+  it("генерирует типы с путём /api/event-types", () => {
+    expect(readArtifact(typesUrl)).toContain('"/api/event-types"');
+  });
 });

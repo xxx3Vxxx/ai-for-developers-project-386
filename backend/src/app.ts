@@ -4,6 +4,7 @@ import { loadConfig, type Config } from "./config.js";
 import { createDb, type Db } from "./db.js";
 import { registerErrorHandling } from "./errors.js";
 import { registerConfigRoutes } from "./routes/config.js";
+import { registerEventTypeRoutes } from "./routes/event-types.js";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -43,6 +44,7 @@ export function buildApp({
   });
 
   registerConfigRoutes(app, config);
+  registerEventTypeRoutes(app);
 
   return app;
 }
