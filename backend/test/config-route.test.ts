@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { buildApp } from "../src/app.js";
 import { loadConfig } from "../src/config.js";
+import { createDb } from "../src/db.js";
 
 describe("GET /api/config", () => {
   afterEach(() => {
@@ -13,7 +14,7 @@ describe("GET /api/config", () => {
     // 13 октября 01:00 в Москве, хотя по UTC ещё 12 октября.
     vi.setSystemTime(new Date("2026-10-12T22:00:00.000Z"));
 
-    const app = buildApp({ config: loadConfig({}) });
+    const app = buildApp({ config: loadConfig({}), db: createDb(":memory:") });
     try {
       const response = await app.inject({ method: "GET", url: "/api/config" });
 
@@ -41,6 +42,7 @@ describe("GET /api/config", () => {
         WORK_DAY_END: "19:00",
         BOOKING_WINDOW_DAYS: "30",
       }),
+      db: createDb(":memory:"),
     });
     try {
       const response = await app.inject({ method: "GET", url: "/api/config" });

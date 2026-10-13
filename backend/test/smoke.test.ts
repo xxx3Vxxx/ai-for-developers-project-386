@@ -1,9 +1,10 @@
 import { afterAll, describe, expect, it } from "vitest";
 
 import { buildApp } from "../src/app.js";
+import { createDb } from "../src/db.js";
 
 describe("app", () => {
-  const app = buildApp();
+  const app = buildApp({ db: createDb(":memory:") });
 
   afterAll(async () => {
     await app.close();
