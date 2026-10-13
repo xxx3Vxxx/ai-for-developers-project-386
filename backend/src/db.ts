@@ -9,6 +9,14 @@ const IN_MEMORY = ":memory:";
 /** Открытая база SQLite; передаётся в `buildApp({ db })`. */
 export type Db = Database.Database;
 
+/** Машинный код ошибки SQLite: better-sqlite3 кладёт расширенный код в `code`. */
+export function sqliteErrorCode(error: unknown): string | undefined {
+  if (error instanceof Error && "code" in error) {
+    return (error as { code?: string }).code;
+  }
+  return undefined;
+}
+
 /**
  * Схема создаётся идемпотентным SQL при старте, без миграций (ADR-0006).
  */

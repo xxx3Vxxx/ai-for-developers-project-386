@@ -46,7 +46,7 @@ export function buildApp({
   });
 
   registerConfigRoutes(app, config);
-  registerEventTypeRoutes(app);
+  registerEventTypeRoutes(app, config);
   registerSlotRoutes(app, config);
   registerBookingRoutes(app, config);
 

@@ -42,6 +42,11 @@ export function workWindowMinutes(start: string, end: string): number {
   return hhmmToMinutes(end) - hhmmToMinutes(start);
 }
 
+/** Тело запроса — простой объект; иначе валидировать по полям нечего. */
+export function isBodyObject(body: unknown): body is Record<string, unknown> {
+  return typeof body === "object" && body !== null && !Array.isArray(body);
+}
+
 function isBlank(value: unknown): boolean {
   if (value === undefined || value === null) return true;
   return typeof value === "string" && value.trim() === "";

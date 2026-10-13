@@ -7,6 +7,7 @@ import { ApiError, type ErrorFields } from "../errors.js";
 import { slotStartOf } from "../slots.js";
 import { addDays, dateInTimeZone, toZonedIso } from "../time.js";
 import {
+  isBodyObject,
   validateEventTypeId,
   validateGuestEmail,
   validateGuestName,
@@ -26,11 +27,6 @@ interface BookingRow {
   end: number;
   guestName: string;
   guestEmail: string;
-}
-
-/** Тело запроса — простой объект; иначе валидировать по полям нечего. */
-function isBodyObject(body: unknown): body is Record<string, unknown> {
-  return typeof body === "object" && body !== null && !Array.isArray(body);
 }
 
 /**

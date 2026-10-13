@@ -49,6 +49,28 @@ model EventType {
   durationMinutes: int32;
 }
 
+/**
+ * Тело создания типа события (ADR-0010): `title` обязателен (1–100 после trim),
+ * `description` необязателен (≤ 500, дефолт `""`), `durationMinutes` — целое,
+ * кратное 15, от 15 до длины рабочего окна (ADR-0003).
+ */
+model EventTypeRequest {
+  /** Название типа события. */
+  title: string;
+
+  /** Описание типа события. */
+  description?: string;
+
+  /** Длительность в минутах. */
+  durationMinutes: int32;
+}
+
+/** Успех создания типа события (201, ADR-0010): «голый» созданный тип. */
+model EventTypeCreated {
+  @statusCode statusCode: 201;
+  ...EventType;
+}
+
 /** Слот дня: начало, конец и признак доступности (ADR-0002, ADR-0003). */
 model Slot {
   /** Начало слота — ISO 8601 со смещением зоны сервиса (ADR-0004). */
@@ -189,6 +211,20 @@ op getConfig(): ServiceConfig | InternalError;
 @route("/api/event-types")
 @get
 op listEventTypes(): EventType[] | InternalError;
+
+/**
+ * Создаёт тип события (ADR-0010). Тело валидируется целиком до обращения к базе:
+ * `title` 1–100 после trim, `description` ≤ 500, `durationMinutes` — целое,
+ * кратное 15, от 15 до длины рабочего окна (ADR-0003). Нарушения отдаются как
+ * `400 VALIDATION_ERROR` с `fields`; уникальности `title` нет, поэтому конфликта
+ * не бывает; занятая база — `503 SERVICE_UNAVAILABLE` (ADR-0007). Успех — `201` и
+ * созданный тип в форме чтения.
+ */
+@route("/api/event-types")
+@post
+op createEventType(
+  @body body: EventTypeRequest,
+): EventTypeCreated | ClientError | ServiceUnavailableError | InternalError;
 
 /**
  * Полная сетка слотов дня для типа события: занятые и уже начавшиеся слоты
