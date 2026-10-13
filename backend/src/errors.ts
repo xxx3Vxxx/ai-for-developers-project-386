@@ -50,16 +50,13 @@ export function sendError(reply: FastifyReply, code: ErrorCode, fields?: ErrorFi
 }
 
 /**
- * Единый конверт для всех ошибок (ADR-0005): неизвестный маршрут — `404
- * NOT_FOUND`, доменная ошибка — по своему коду, прочие клиентские ошибки Fastify
- * (например, битый JSON) — `400 VALIDATION_ERROR`, внутренняя — `500
- * INTERNAL_ERROR` без деталей.
+ * Единый конверт для всех ошибок (ADR-0005): доменная ошибка — по своему коду,
+ * прочие клиентские ошибки Fastify (например, битый JSON) — `400
+ * VALIDATION_ERROR`, внутренняя — `500 INTERNAL_ERROR` без деталей. Неизвестный
+ * маршрут (`404 NOT_FOUND`) размечает обработчик из `static.ts`, который совмещает
+ * его со SPA-fallback (ADR-0014).
  */
 export function registerErrorHandling(app: FastifyInstance): void {
-  app.setNotFoundHandler((_request, reply) => {
-    sendError(reply, "NOT_FOUND");
-  });
-
   app.setErrorHandler((error: FastifyError, request, reply) => {
     if (error instanceof ApiError) {
       sendError(reply, error.code, error.fields);

@@ -7,6 +7,7 @@ import { registerConfigRoutes } from "./routes/config.js";
 import { registerBookingRoutes } from "./routes/bookings.js";
 import { registerEventTypeRoutes } from "./routes/event-types.js";
 import { registerSlotRoutes } from "./routes/slots.js";
+import { registerStatic } from "./static.js";
 
 declare module "fastify" {
   interface FastifyInstance {
@@ -20,6 +21,8 @@ export interface BuildAppOptions {
   config?: Config;
   /** Готовая база; по умолчанию создаётся из `config.databasePath` (для тестов — `:memory:`). */
   db?: Db;
+  /** Корень статики фронта; по умолчанию — `frontend/dist` (ADR-0014). */
+  staticRoot?: string;
 }
 
 /**
@@ -29,6 +32,7 @@ export interface BuildAppOptions {
 export function buildApp({
   config = loadConfig(),
   db = createDb(config.databasePath),
+  staticRoot,
 }: BuildAppOptions = {}): FastifyInstance {
   const app = Fastify({
     logger: false,
@@ -49,6 +53,8 @@ export function buildApp({
   registerEventTypeRoutes(app, config);
   registerSlotRoutes(app, config);
   registerBookingRoutes(app, config);
+
+  registerStatic(app, staticRoot);
 
   return app;
 }
