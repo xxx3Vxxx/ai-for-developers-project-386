@@ -34,6 +34,21 @@ model ServiceConfig {
   today: plainDate;
 }
 
+/** Тип события: шаблон брони (GLOSSARY). */
+model EventType {
+  /** Идентификатор типа события. */
+  id: string;
+
+  /** Название типа события. */
+  title: string;
+
+  /** Описание типа события. */
+  description: string;
+
+  /** Длительность в минутах. */
+  durationMinutes: int32;
+}
+
 /** Тело ошибки в едином конверте (ADR-0005). */
 model ErrorDetail {
   /** Машинный код: `SCREAMING_SNAKE_CASE`. */
@@ -62,3 +77,11 @@ model InternalError {
 @route("/api/config")
 @get
 op getConfig(): ServiceConfig | InternalError;
+
+/**
+ * Справочник типов событий в детерминированном порядке: `durationMinutes` asc,
+ * при равенстве — `id` asc (ADR-0009).
+ */
+@route("/api/event-types")
+@get
+op listEventTypes(): EventType[] | InternalError;
