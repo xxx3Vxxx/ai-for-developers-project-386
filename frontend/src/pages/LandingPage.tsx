@@ -11,6 +11,7 @@ import {
   Text,
   Title,
 } from "@mantine/core";
+import { useDocumentTitle } from "@mantine/hooks";
 import { Link } from "react-router-dom";
 
 import { useConfig } from "../api/config";
@@ -19,6 +20,7 @@ import { landing } from "../copy/landing";
 
 export function LandingPage() {
   const { state, retry } = useConfig();
+  useDocumentTitle(common.brand);
 
   return (
     <Container size="lg" py="xl">

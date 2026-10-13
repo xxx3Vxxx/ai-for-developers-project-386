@@ -8,11 +8,14 @@ import {
   Text,
   Textarea,
   TextInput,
+  useMantineTheme,
 } from "@mantine/core";
+import { useMediaQuery } from "@mantine/hooks";
 import { useState } from "react";
 
 import { createEventType, type EventType } from "../../api/event-types";
 import { admin } from "../../copy/admin";
+import { common } from "../../copy/common";
 import { validateDescription, validateDurationMinutes, validateTitle } from "../../validation";
 
 /**
@@ -71,6 +74,13 @@ export function NewEventTypeDrawer({
   });
   const [serverErrors, setServerErrors] = useState<Partial<Record<FieldName, string>>>({});
   const [submitState, setSubmitState] = useState<SubmitState>({ status: "idle" });
+
+  // На узких экранах панель занимает всю ширину, на десктопе — `md` (ADR-0016).
+  // У `Drawer` нет адаптивного `size`, поэтому ширину переключает Mantine-хук
+  // `useMediaQuery` по брейкпоинту `sm` — без собственных `.css` и media queries.
+  const theme = useMantineTheme();
+  const isDesktop = useMediaQuery(`(min-width: ${theme.breakpoints.sm})`);
+  const drawerSize = isDesktop ? "md" : "100%";
 
   const titleValidation = validateTitle(draft.title);
   const descriptionValidation = validateDescription(draft.description);
@@ -152,8 +162,9 @@ export function NewEventTypeDrawer({
       opened={opened}
       onClose={close}
       position="right"
-      size="md"
+      size={drawerSize}
       title={admin.create.drawerTitle}
+      closeButtonProps={{ "aria-label": common.close }}
     >
       <Stack gap="sm">
         <TextInput
