@@ -106,3 +106,9 @@ CI (`.github/workflows/ci.yml`) запускается на каждый push и
 
 Один контекст: один `GLOSSARY.md` + `docs/adr/` в корне репозитория. См.
 `docs/agents/domain.md`.
+
+### MCP-серверы
+
+Конфигурация MCP живёт в `opencode.json` (секция `mcp.servers`). Секреты не
+коммитим: значения подставляются из окружения через `{env:NAME}` (например
+`RENDER_API_KEY`, см. `.env.example` и README).

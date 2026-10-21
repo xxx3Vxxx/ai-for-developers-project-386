@@ -69,6 +69,26 @@ npm run dev:frontend # только фронтенд (Vite dev server)
 | `WORK_DAY_END`        | `18:00`                  | `HH:MM` (24 ч)                                             |
 | `BOOKING_WINDOW_DAYS` | `14`                     | целое 1–365                                                |
 
+### MCP-серверы
+
+Инструменты разработки описаны в `opencode.json` в корне репозитория (секция
+`mcp.servers`). Секреты в конфиг не попадают: значения подставляются из
+переменных окружения через `{env:NAME}`.
+
+| Сервер   | Переменная       | Назначение                             |
+| -------- | ---------------- | -------------------------------------- |
+| `render` | `RENDER_API_KEY` | работа с инфраструктурой Render по MCP |
+
+Как задать ключ:
+
+```bash
+export RENDER_API_KEY=...   # Render Dashboard → Account Settings → API Keys
+```
+
+`RENDER_API_KEY` нужен только для MCP-инструментов и **не коммитится**: `.env`
+в `.gitignore`, в репозитории лежит лишь имя переменной (`.env.example`). В CI
+ключ можно передать через GitHub Secret, если MCP понадобится в сборке.
+
 ### Контракты API
 
 HTTP-контракт описан на [TypeSpec](https://typespec.io/) в `contracts/main.tsp`; из него
