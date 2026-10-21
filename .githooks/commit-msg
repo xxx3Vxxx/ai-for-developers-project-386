@@ -1,0 +1,27 @@
+#!/bin/sh
+# Проверяет сообщение коммита (ADR-0019): Conventional Commits + ссылка на тикет.
+# Подключается автоматически через `core.hooksPath=.githooks` (package.json → prepare).
+set -e
+
+message_file="$1"
+subject=$(head -n 1 "$message_file")
+
+# Служебные коммиты git/инструментов не проверяем.
+case "$subject" in
+  Merge* | Revert* | fixup!* | squash!*) exit 0 ;;
+esac
+
+conventional='^(feat|fix|docs|style|refactor|perf|test|build|ci|chore|revert)(\([a-z0-9./-]+\))?!?: .+'
+if ! printf '%s' "$subject" | grep -Eq "$conventional"; then
+  echo "commit-msg: тема коммита должна соответствовать Conventional Commits." >&2
+  echo "  пример: feat(backend): add booking endpoint (#29)" >&2
+  exit 1
+fi
+
+if ! printf '%s' "$subject" | grep -Eq '#[0-9]+'; then
+  echo "commit-msg: в теме коммита нужна ссылка на тикет, например (#29)." >&2
+  echo "  задачи живут в GitHub Issues: docs/agents/issue-tracker.md" >&2
+  exit 1
+fi
+
+exit 0

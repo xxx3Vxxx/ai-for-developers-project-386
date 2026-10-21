@@ -38,6 +38,7 @@
 ├── playwright.config.ts     # конфиг E2E: прод-сборка на БД :memory:
 ├── Dockerfile               # прод-образ: API + статика фронта (ADR-0014)
 ├── .dockerignore            # контекст сборки образа
+├── .githooks/commit-msg     # проверка Conventional Commits + ссылки на тикет (ADR-0019)
 ├── .github/workflows/
 │   ├── ci.yml               # линтер, типы, тесты, сборка
 │   ├── release-please.yml   # релизы по Conventional Commits
@@ -83,6 +84,11 @@
 release-please (CHANGELOG и версия).
 
 Пример: `feat(backend): add booking endpoint`
+
+Каждый коммит **ссылается на тикет** в теме, например
+`feat(backend): add booking endpoint (#29)` — от этого зависит трассируемость
+(ADR-0019). Формат и ссылку проверяет хук `.githooks/commit-msg`; он включается
+автоматически при `npm install` (`prepare` → `git config core.hooksPath .githooks`).
 
 ## CI и ограничения
 

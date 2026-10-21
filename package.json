@@ -19,6 +19,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "e2e": "npm run build && playwright test",
+    "prepare": "git config core.hooksPath .githooks || true",
     "format": "prettier --write .",
     "format:check": "prettier --check ."
   },
