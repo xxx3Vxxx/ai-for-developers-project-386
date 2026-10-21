@@ -112,6 +112,7 @@ npm test          # тесты (Vitest)
 npm run lint      # линтер (ESLint)
 npm run typecheck # проверка типов (tsc)
 npm run build     # сборка
+npm run e2e       # браузерные E2E (Playwright, сборка + прогон)
 
 npm run format       # форматирование (Prettier)
 npm run format:check # проверка форматирования
@@ -125,6 +126,7 @@ make contracts-generate # TypeSpec → OpenAPI → типы
 make test   # тесты
 make lint   # линтер
 make check  # линтер + типы + тесты
+make e2e    # браузерные E2E (Playwright)
 make ci     # полный прогон, как в GitHub Actions
 make docker-build # собрать прод-образ
 make docker-run   # запустить прод-образ с томом под БД

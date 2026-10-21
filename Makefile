@@ -10,7 +10,7 @@ NPM ?= npm
 
 .PHONY: help install ci-install dev dev-backend dev-frontend build start \
 	test test-watch lint lint-fix typecheck format format-check check ci clean \
-	contracts-generate docker-build docker-run
+	contracts-generate docker-build docker-run e2e
 
 help: ## Показать список команд
 	@grep -hE '^[a-zA-Z0-9_-]+:.*?## ' $(MAKEFILE_LIST) \
@@ -52,6 +52,9 @@ test: ## Прогнать тесты
 
 test-watch: ## Тесты в режиме наблюдения (backend)
 	$(NPM) run test:watch --workspace backend
+
+e2e: ## Прогнать браузерные E2E-сценарии (Playwright, ADR-0018)
+	$(NPM) run e2e
 
 lint: ## Проверить код линтером
 	$(NPM) run lint

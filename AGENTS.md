@@ -16,7 +16,7 @@
 - **Контракты:** TypeSpec → OpenAPI 3.0.0 → типы и клиентский SDK
   (`@hey-api/openapi-ts`, ADR-0008, ADR-0017); фронтенд вызывает сгенерированные
   операции, бекенд берёт только типы.
-- **Тесты:** Vitest
+- **Тесты:** Vitest; браузерные E2E — Playwright (ADR-0018)
 - **Линтер/формат:** ESLint (flat config) + Prettier, проверка типов через `tsc`
 - **Пакетный менеджер:** npm (workspaces)
 
@@ -34,6 +34,8 @@
 │   └── test/smoke.test.ts   # дымовой тест
 ├── frontend/                # Vite + React + Mantine
 │   └── src/App.tsx
+├── e2e/                     # браузерные E2E-сценарии (Playwright, ADR-0018)
+├── playwright.config.ts     # конфиг E2E: прод-сборка на БД :memory:
 ├── Dockerfile               # прод-образ: API + статика фронта (ADR-0014)
 ├── .dockerignore            # контекст сборки образа
 ├── .github/workflows/
@@ -61,6 +63,8 @@
   `build`. Артефакты (`contracts/tsp-output/`, `contracts/generated/`) не
   коммитятся.
 - `make check` — линтер + типы + тесты (прогнать перед коммитом).
+- `npm run e2e` (или `make e2e`) — браузерные E2E на прод-сборке; в CI отдельный
+  job. Прогон поднимает бекенд на изолированной БД `:memory:` (ADR-0018).
 - `make dev` — бекенд и фронтенд вместе.
 - `make docker-build` / `make docker-run` — собрать и запустить прод-образ
   (API + статика фронта в одном контейнере, ADR-0014).
@@ -82,9 +86,10 @@ release-please (CHANGELOG и версия).
 
 ## CI и ограничения
 
-CI (`.github/workflows/ci.yml`) запускается на каждый push и pull request:
-`npm ci` → `npm run lint` → `npm run typecheck` → `npm test` → `npm run build`.
-Держите прогон зелёным.
+CI (`.github/workflows/ci.yml`) запускается на каждый push и pull request. Job
+`quality`: `npm ci` → `npm run lint` → `npm run typecheck` → `npm test` →
+`npm run build`. Job `e2e`: `npm ci` → установка браузеров → `npm run e2e`.
+Держите оба прогона зелёными.
 
 Не удаляйте и не редактируйте `.github/workflows/hexlet-check.yml` и не
 переименовывайте репозиторий — это автопроверка Хекслета.
