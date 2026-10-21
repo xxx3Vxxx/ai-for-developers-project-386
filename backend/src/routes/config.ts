@@ -1,10 +1,8 @@
-import type { components } from "contracts";
+import type { ServiceConfig } from "contracts/types";
 import type { FastifyInstance } from "fastify";
 
 import type { Config } from "../config.js";
 import { dateInTimeZone } from "../time.js";
-
-type ServiceConfig = components["schemas"]["ServiceConfig"];
 
 /**
  * Регистрирует `GET /api/config` — мета-эндпоинт с зоной сервиса, рабочим

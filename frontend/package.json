@@ -13,10 +13,10 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@hey-api/client-fetch": "^0.13.1",
     "@mantine/core": "^9.7.0",
     "@mantine/hooks": "^9.7.0",
     "contracts": "*",
-    "openapi-fetch": "^0.17.0",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
     "react-router-dom": "^7.18.4"

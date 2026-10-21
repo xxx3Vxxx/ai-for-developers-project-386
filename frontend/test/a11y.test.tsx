@@ -1,4 +1,4 @@
-import type { components } from "contracts";
+import type { Slot, SlotsResponse } from "contracts";
 import { MantineProvider } from "@mantine/core";
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -18,8 +18,6 @@ import { api, mockApi, mockErrorResponse, mockResponse, resetApiMock } from "./h
 
 vi.mock("../src/api/client", () => import("./helpers/api"));
 
-type Slot = components["schemas"]["Slot"];
-type SlotsResponse = components["schemas"]["SlotsResponse"];
 type User = ReturnType<typeof userEvent.setup>;
 
 const config: ServiceConfig = {
@@ -119,7 +117,7 @@ describe("лендинг /", () => {
   });
 
   it("нет нарушений в состоянии загрузки", async () => {
-    api.GET.mockImplementation(() => new Promise(() => {}));
+    api.getConfig.mockImplementation(() => new Promise(() => {}));
     const { container } = renderApp("/");
     await screen.findByRole("status", { name: common.loading });
 
@@ -127,7 +125,7 @@ describe("лендинг /", () => {
   });
 
   it("нет нарушений в состоянии ошибки чтения", async () => {
-    api.GET.mockRejectedValue(new Error("network"));
+    api.getConfig.mockRejectedValue(new Error("network"));
     const { container } = renderApp("/");
     await screen.findByRole("alert");
 
@@ -176,7 +174,7 @@ describe("мастер /book", () => {
   });
 
   it("нет нарушений на экране успеха", async () => {
-    api.POST.mockResolvedValue(mockResponse(booking));
+    api.createBooking.mockResolvedValue(mockResponse(booking));
     const user = userEvent.setup();
     const { container } = renderApp("/book");
     await goToConfirmation(user);
@@ -187,7 +185,9 @@ describe("мастер /book", () => {
   });
 
   it("нет нарушений на конфликте записи", async () => {
-    api.POST.mockResolvedValue(mockErrorResponse("CONFLICT", "Это время уже занято.", 409));
+    api.createBooking.mockResolvedValue(
+      mockErrorResponse("CONFLICT", "Это время уже занято.", 409),
+    );
     const user = userEvent.setup();
     const { container } = renderApp("/book");
     await goToConfirmation(user);
@@ -198,7 +198,7 @@ describe("мастер /book", () => {
   });
 
   it("нет нарушений при недоступности сервиса на записи", async () => {
-    api.POST.mockResolvedValue(
+    api.createBooking.mockResolvedValue(
       mockErrorResponse("SERVICE_UNAVAILABLE", "Сервис временно недоступен.", 503),
     );
     const user = userEvent.setup();
@@ -223,12 +223,7 @@ describe("мастер /book", () => {
   });
 
   it("нет нарушений при ошибке чтения слотов", async () => {
-    api.GET.mockImplementation(async (path: string) => {
-      if (path === "/api/config") return mockResponse(config);
-      if (path === "/api/event-types") return mockResponse(eventTypes);
-      if (path === "/api/event-types/{id}/slots") throw new Error("network");
-      return mockResponse(bookings);
-    });
+    api.listSlots.mockRejectedValue(new Error("network"));
     const user = userEvent.setup();
     const { container } = renderApp("/book");
     await goToDateTimeStep(user);
@@ -266,7 +261,9 @@ describe("кабинет /admin", () => {
   });
 
   it("нет нарушений в состоянии ошибки чтения", async () => {
-    api.GET.mockRejectedValue(new Error("network"));
+    for (const read of [api.getConfig, api.listEventTypes, api.listBookings]) {
+      read.mockRejectedValue(new Error("network"));
+    }
     const { container } = renderApp("/admin");
     await screen.findByRole("alert");
 

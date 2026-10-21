@@ -69,7 +69,7 @@ describe("лендинг", () => {
     renderApp();
 
     expect(await screen.findByText(windowCapability)).toBeInTheDocument();
-    expect(api.GET).toHaveBeenCalledWith("/api/config");
+    expect(api.getConfig).toHaveBeenCalled();
   });
 
   it("склоняет число дней окна записи", async () => {
@@ -83,7 +83,7 @@ describe("лендинг", () => {
   });
 
   it("показывает ошибку чтения и повторяет запрос по «Повторить»", async () => {
-    api.GET.mockRejectedValueOnce(new Error("network"));
+    api.getConfig.mockRejectedValueOnce(new Error("network"));
     const user = userEvent.setup();
 
     renderApp();
@@ -112,7 +112,10 @@ describe("шапка", () => {
   it("ведёт в кабинет владельца", async () => {
     await renderLanding();
 
-    expect(screen.getByRole("link", { name: common.ownerCabinet })).toHaveAttribute("href", "/admin");
+    expect(screen.getByRole("link", { name: common.ownerCabinet })).toHaveAttribute(
+      "href",
+      "/admin",
+    );
   });
 
   it("показывает бренд «Календарь звонков»", async () => {

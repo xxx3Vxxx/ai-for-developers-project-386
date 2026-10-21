@@ -127,8 +127,8 @@ describe("кабинет /admin", () => {
     expect(within(rail).getByText("Стандартная встреча")).toBeInTheDocument();
     expect(within(rail).getByText("15 мин")).toBeInTheDocument();
     expect(within(rail).getByText("30 мин")).toBeInTheDocument();
-    expect(api.GET).toHaveBeenCalledWith("/api/event-types");
-    expect(api.GET).toHaveBeenCalledWith("/api/bookings");
+    expect(api.listEventTypes).toHaveBeenCalled();
+    expect(api.listBookings).toHaveBeenCalled();
   });
 
   it("группирует встречи по суткам зоны сервиса: «Сегодня»/«Завтра»/дата и метка «сегодня»", async () => {
@@ -181,17 +181,12 @@ describe("кабинет /admin", () => {
 
   it("показывает ошибку чтения и повторяет запрос по «Повторить»", async () => {
     let failed = false;
-    api.GET.mockImplementation(async (path: string) => {
-      if (path === "/api/config") return mockResponse(config);
-      if (path === "/api/event-types") return mockResponse(eventTypes);
-      if (path === "/api/bookings") {
-        if (!failed) {
-          failed = true;
-          throw new Error("network");
-        }
-        return mockResponse(bookings);
+    api.listBookings.mockImplementation(async () => {
+      if (!failed) {
+        failed = true;
+        throw new Error("network");
       }
-      throw new Error(`Незамоканный GET ${path}`);
+      return mockResponse(bookings);
     });
     const user = userEvent.setup();
 

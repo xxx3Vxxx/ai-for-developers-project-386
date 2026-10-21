@@ -1,4 +1,4 @@
-import type { components } from "contracts";
+import type { Booking, Slot, SlotsResponse } from "contracts";
 import { MantineProvider } from "@mantine/core";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -17,10 +17,6 @@ vi.mock("../src/api/client", () => import("./helpers/api"));
 
 const nameField = () => screen.getByRole("textbox", { name: /Имя/ });
 const emailField = () => screen.getByRole("textbox", { name: /Email/ });
-
-type Booking = components["schemas"]["Booking"];
-type Slot = components["schemas"]["Slot"];
-type SlotsResponse = components["schemas"]["SlotsResponse"];
 
 const config: ServiceConfig = {
   timezone: "Europe/Moscow",
@@ -167,14 +163,14 @@ describe("шаг «Подтверждение» и экран успеха", () 
   });
 
   it("создаёт бронь и показывает экран успеха с деталями", async () => {
-    api.POST.mockResolvedValue(mockResponse(booking));
+    api.createBooking.mockResolvedValue(mockResponse(booking));
     renderBook();
     const user = await goToDetailsStep();
     await fillGuest(user);
 
     await user.click(screen.getByRole("button", { name: book.confirmationStep.confirm }));
 
-    expect(api.POST).toHaveBeenCalledWith("/api/bookings", {
+    expect(api.createBooking).toHaveBeenCalledWith({
       body: {
         eventTypeId: "et-15",
         start: "2026-10-14T09:00:00+03:00",
@@ -208,7 +204,9 @@ describe("ошибки записи", () => {
   }
 
   it("на конфликт показывает блок и предлагает выбрать другое время", async () => {
-    api.POST.mockResolvedValue(mockErrorResponse("CONFLICT", "Это время уже занято.", 409));
+    api.createBooking.mockResolvedValue(
+      mockErrorResponse("CONFLICT", "Это время уже занято.", 409),
+    );
     const user = await confirmBooking();
 
     expect(await screen.findByText(book.conflict.title)).toBeInTheDocument();
@@ -223,13 +221,15 @@ describe("ошибки записи", () => {
   });
 
   it("на недоступность сервиса показывает алерт, сохраняет данные и повторяет", async () => {
-    api.POST.mockResolvedValueOnce(
-      mockErrorResponse(
-        "SERVICE_UNAVAILABLE",
-        "Сервис временно недоступен. Попробуйте позже.",
-        503,
-      ),
-    ).mockResolvedValueOnce(mockResponse(booking));
+    api.createBooking
+      .mockResolvedValueOnce(
+        mockErrorResponse(
+          "SERVICE_UNAVAILABLE",
+          "Сервис временно недоступен. Попробуйте позже.",
+          503,
+        ),
+      )
+      .mockResolvedValueOnce(mockResponse(booking));
     const user = await confirmBooking();
 
     const alert = await screen.findByRole("alert");
@@ -245,12 +245,12 @@ describe("ошибки записи", () => {
       guestName: "Иван Петров",
       guestEmail: "ivan@example.com",
     };
-    expect(api.POST).toHaveBeenNthCalledWith(1, "/api/bookings", { body });
-    expect(api.POST).toHaveBeenNthCalledWith(2, "/api/bookings", { body });
+    expect(api.createBooking).toHaveBeenNthCalledWith(1, { body });
+    expect(api.createBooking).toHaveBeenNthCalledWith(2, { body });
   });
 
   it("на внутреннюю ошибку показывает тот же алерт", async () => {
-    api.POST.mockResolvedValue(
+    api.createBooking.mockResolvedValue(
       mockErrorResponse("INTERNAL_ERROR", "Внутренняя ошибка сервера.", 500),
     );
     await confirmBooking();
@@ -261,7 +261,7 @@ describe("ошибки записи", () => {
   });
 
   it("при устаревании слота возвращает на «Дата и время» и перезагружает сетку", async () => {
-    api.POST.mockResolvedValue(
+    api.createBooking.mockResolvedValue(
       mockErrorResponse("INVALID_SLOT", "Это время недоступно для записи.", 400),
     );
     await confirmBooking();
@@ -271,14 +271,11 @@ describe("ошибки записи", () => {
     expect(
       screen.getByRole("heading", { level: 2, name: book.steps.dateTime.label }),
     ).toBeInTheDocument();
-    const slotsCalls = api.GET.mock.calls.filter(
-      ([path]) => path === "/api/event-types/{id}/slots",
-    );
-    expect(slotsCalls.length).toBeGreaterThan(1);
+    expect(api.listSlots.mock.calls.length).toBeGreaterThan(1);
   });
 
   it("при выходе даты из окна возвращает на «Дата и время» и перезагружает сетку", async () => {
-    api.POST.mockResolvedValue(
+    api.createBooking.mockResolvedValue(
       mockErrorResponse("DATE_OUT_OF_WINDOW", "Дата вне окна записи.", 400),
     );
     await confirmBooking();
@@ -288,14 +285,11 @@ describe("ошибки записи", () => {
     expect(
       screen.getByRole("heading", { level: 2, name: book.steps.dateTime.label }),
     ).toBeInTheDocument();
-    const slotsCalls = api.GET.mock.calls.filter(
-      ([path]) => path === "/api/event-types/{id}/slots",
-    );
-    expect(slotsCalls.length).toBeGreaterThan(1);
+    expect(api.listSlots.mock.calls.length).toBeGreaterThan(1);
   });
 
   it("при исчезновении типа возвращает на «Тип» и перезагружает список", async () => {
-    api.POST.mockResolvedValue(
+    api.createBooking.mockResolvedValue(
       mockErrorResponse("EVENT_TYPE_NOT_FOUND", "Тип события не найден.", 404),
     );
     await confirmBooking();
@@ -305,12 +299,11 @@ describe("ошибки записи", () => {
     expect(
       screen.getByRole("heading", { level: 2, name: book.steps.type.label }),
     ).toBeInTheDocument();
-    const typeCalls = api.GET.mock.calls.filter(([path]) => path === "/api/event-types");
-    expect(typeCalls.length).toBeGreaterThan(1);
+    expect(api.listEventTypes.mock.calls.length).toBeGreaterThan(1);
   });
 
   it("на ошибки полей от сервера возвращает на «Ваши данные» с сообщениями", async () => {
-    api.POST.mockResolvedValue(
+    api.createBooking.mockResolvedValue(
       mockErrorResponse("VALIDATION_ERROR", "Некорректный формат запроса.", 400, {
         guestName: "Недопустимые символы",
         guestEmail: "Некорректный email",
@@ -328,7 +321,7 @@ describe("ошибки записи", () => {
   });
 
   it("показывает сообщение сервера без полей как есть", async () => {
-    api.POST.mockResolvedValue(
+    api.createBooking.mockResolvedValue(
       mockErrorResponse("VALIDATION_ERROR", "Некорректный формат запроса.", 400),
     );
     await confirmBooking();
@@ -338,7 +331,7 @@ describe("ошибки записи", () => {
   });
 
   it("показывает сообщение, если VALIDATION_ERROR пришёл про поля вне формы", async () => {
-    api.POST.mockResolvedValue(
+    api.createBooking.mockResolvedValue(
       mockErrorResponse("VALIDATION_ERROR", "Некорректное время", 400, {
         start: "Некорректное время",
       }),

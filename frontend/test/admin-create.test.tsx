@@ -89,7 +89,7 @@ describe("/admin: создание типа события", () => {
   });
 
   it("создаёт тип, закрывает панель и показывает успех, обновляя рельс", async () => {
-    api.POST.mockResolvedValue(mockResponse(created));
+    api.createEventType.mockResolvedValue(mockResponse(created));
     renderAdmin();
     const { user, drawer } = await openDrawer();
 
@@ -102,7 +102,7 @@ describe("/admin: создание типа события", () => {
     });
     await user.click(within(drawer).getByRole("button", { name: admin.create.submit }));
 
-    expect(api.POST).toHaveBeenCalledWith("/api/event-types", {
+    expect(api.createEventType).toHaveBeenCalledWith({
       body: {
         title: created.title,
         description: created.description,
@@ -124,7 +124,7 @@ describe("/admin: создание типа события", () => {
   });
 
   it("показывает ошибки 400 под полями и не закрывает панель", async () => {
-    api.POST.mockResolvedValue(
+    api.createEventType.mockResolvedValue(
       mockErrorResponse("VALIDATION_ERROR", "Некорректный формат запроса.", 400, {
         title: fieldMessages.title.REQUIRED,
         durationMinutes: fieldMessages.durationMinutes.NOT_MULTIPLE,
@@ -151,7 +151,7 @@ describe("/admin: создание типа события", () => {
     await user.click(within(drawer).getByRole("button", { name: admin.create.submit }));
 
     expect(await screen.findByText(fieldMessages.title.REQUIRED)).toBeInTheDocument();
-    expect(api.POST).not.toHaveBeenCalled();
+    expect(api.createEventType).not.toHaveBeenCalled();
   });
 
   it("подсказывает «Укажите длительность», когда поле очистили", async () => {
@@ -162,13 +162,15 @@ describe("/admin: создание типа события", () => {
     await user.click(within(drawer).getByRole("button", { name: admin.create.submit }));
 
     expect(await screen.findByText(fieldMessages.durationMinutes.REQUIRED)).toBeInTheDocument();
-    expect(api.POST).not.toHaveBeenCalled();
+    expect(api.createEventType).not.toHaveBeenCalled();
   });
 
   it("на недоступность сервиса показывает алерт с «Повторить», сохраняя ввод", async () => {
-    api.POST.mockResolvedValueOnce(
-      mockErrorResponse("SERVICE_UNAVAILABLE", "Сервис временно недоступен.", 503),
-    ).mockResolvedValueOnce(mockResponse(created));
+    api.createEventType
+      .mockResolvedValueOnce(
+        mockErrorResponse("SERVICE_UNAVAILABLE", "Сервис временно недоступен.", 503),
+      )
+      .mockResolvedValueOnce(mockResponse(created));
     renderAdmin();
     const { user, drawer } = await openDrawer();
     await fillDrawer(user, drawer, created.durationMinutes);
@@ -183,7 +185,7 @@ describe("/admin: создание типа события", () => {
     await user.click(within(alert).getByRole("button", { name: admin.create.error.retry }));
 
     expect(await screen.findByText(admin.create.success.title)).toBeInTheDocument();
-    expect(api.POST).toHaveBeenNthCalledWith(2, "/api/event-types", {
+    expect(api.createEventType).toHaveBeenNthCalledWith(2, {
       body: {
         title: created.title,
         description: created.description,
@@ -193,7 +195,7 @@ describe("/admin: создание типа события", () => {
   });
 
   it("на внутреннюю ошибку показывает тот же алерт", async () => {
-    api.POST.mockResolvedValue(
+    api.createEventType.mockResolvedValue(
       mockErrorResponse("INTERNAL_ERROR", "Внутренняя ошибка сервера.", 500),
     );
     renderAdmin();

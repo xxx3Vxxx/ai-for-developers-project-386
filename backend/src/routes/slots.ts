@@ -1,4 +1,4 @@
-import type { components } from "contracts";
+import type { SlotsResponse } from "contracts/types";
 import type { FastifyInstance } from "fastify";
 
 import type { Config } from "../config.js";
@@ -6,8 +6,6 @@ import { ApiError } from "../errors.js";
 import { fieldMessages } from "../messages.js";
 import { buildDaySlots } from "../slots.js";
 import { addDays, dateInTimeZone, isCalendarDate } from "../time.js";
-
-type SlotsResponse = components["schemas"]["SlotsResponse"];
 
 /**
  * Регистрирует `GET /api/event-types/:id/slots?date=YYYY-MM-DD` — полную сетку

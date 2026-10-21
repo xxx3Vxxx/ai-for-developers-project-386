@@ -1,4 +1,4 @@
-import type { components } from "contracts";
+import type { Slot, SlotsResponse } from "contracts";
 import { MantineProvider } from "@mantine/core";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -13,9 +13,6 @@ import { common } from "../src/copy/common";
 import { api, mockApi, resetApiMock } from "./helpers/api";
 
 vi.mock("../src/api/client", () => import("./helpers/api"));
-
-type Slot = components["schemas"]["Slot"];
-type SlotsResponse = components["schemas"]["SlotsResponse"];
 
 const eventTypes: EventType[] = [
   {
@@ -88,7 +85,7 @@ describe("мастер записи /book", () => {
     ).toBeInTheDocument();
     expect(screen.getByText(book.duration(15))).toBeInTheDocument();
     expect(screen.getByText(book.duration(30))).toBeInTheDocument();
-    expect(api.GET).toHaveBeenCalledWith("/api/event-types");
+    expect(api.listEventTypes).toHaveBeenCalled();
   });
 
   it("берёт список типов из GET /api/event-types", async () => {
@@ -157,7 +154,7 @@ describe("мастер записи /book", () => {
   });
 
   it("показывает ошибку чтения типов и повторяет запрос по «Повторить»", async () => {
-    api.GET.mockRejectedValueOnce(new Error("network"));
+    api.listEventTypes.mockRejectedValueOnce(new Error("network"));
     const user = userEvent.setup();
 
     renderBook();

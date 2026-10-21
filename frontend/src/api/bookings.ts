@@ -1,10 +1,9 @@
-import type { components } from "contracts";
+import type { Booking, BookingRequest } from "contracts";
 import { useCallback, useEffect, useState } from "react";
 
 import { api } from "./client";
 
-export type Booking = components["schemas"]["Booking"];
-export type BookingRequest = components["schemas"]["BookingRequest"];
+export type { Booking, BookingRequest };
 
 /** Машинный код ошибки записи (ADR-0005, ADR-0010); незнакомые коды — как есть. */
 export type BookingErrorCode =
@@ -33,7 +32,7 @@ export type BookingResult = { ok: true; booking: Booking } | { ok: false; error:
  */
 export async function createBooking(body: BookingRequest): Promise<BookingResult> {
   try {
-    const { data, error } = await api.POST("/api/bookings", { body });
+    const { data, error } = await api.createBooking({ body });
     if (error) return { ok: false, error: error.error };
     if (!data) return { ok: false, error: { code: "SERVICE_UNAVAILABLE", message: "" } };
     return { ok: true, booking: data };
@@ -46,9 +45,9 @@ export async function createBooking(body: BookingRequest): Promise<BookingResult
 export type BookingsState =
   { status: "loading" } | { status: "ready"; bookings: Booking[] } | { status: "error" };
 
-/** Читает `GET /api/bookings` сгенерированным клиентом (ADR-0008). */
+/** Читает `GET /api/bookings` сгенерированным SDK (ADR-0008). */
 async function fetchBookings(): Promise<Booking[]> {
-  const { data, error } = await api.GET("/api/bookings");
+  const { data, error } = await api.listBookings();
   if (error) throw error;
   return data;
 }

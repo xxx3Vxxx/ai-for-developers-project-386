@@ -1,4 +1,4 @@
-import type { components } from "contracts";
+import type { Slot } from "contracts/types";
 
 import type { Config } from "./config.js";
 import type { Db } from "./db.js";
@@ -9,8 +9,6 @@ import {
   zonedMinutesFromMidnight,
   zonedWallClockToInstant,
 } from "./time.js";
-
-type Slot = components["schemas"]["Slot"];
 
 const MINUTE = 60_000;
 

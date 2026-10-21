@@ -1,17 +1,17 @@
-import type { components } from "contracts";
+import type { ServiceConfig } from "contracts";
 import { useCallback, useEffect, useState } from "react";
 
 import { api } from "./client";
 
-export type ServiceConfig = components["schemas"]["ServiceConfig"];
+export type { ServiceConfig };
 
 /** Состояние чтения параметров сервиса. */
 export type ConfigState =
   { status: "loading" } | { status: "ready"; config: ServiceConfig } | { status: "error" };
 
-/** Читает `GET /api/config` сгенерированным клиентом (ADR-0008). */
+/** Читает `GET /api/config` сгенерированным SDK (ADR-0008). */
 async function fetchConfig(): Promise<ServiceConfig> {
-  const { data, error } = await api.GET("/api/config");
+  const { data, error } = await api.getConfig();
   if (error) throw error;
   return data;
 }

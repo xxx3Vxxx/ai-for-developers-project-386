@@ -1,4 +1,4 @@
-import type { components } from "contracts";
+import type { Slot, SlotsResponse } from "contracts";
 import { MantineProvider } from "@mantine/core";
 import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
@@ -9,12 +9,9 @@ import { App } from "../src/App";
 import type { ServiceConfig } from "../src/api/config";
 import type { EventType } from "../src/api/event-types";
 import { book } from "../src/copy/book";
-import { api, mockResponse, resetApiMock } from "./helpers/api";
+import { api, mockApi, mockResponse, resetApiMock } from "./helpers/api";
 
 vi.mock("../src/api/client", () => import("./helpers/api"));
-
-type Slot = components["schemas"]["Slot"];
-type SlotsResponse = components["schemas"]["SlotsResponse"];
 
 const config: ServiceConfig = {
   timezone: "Europe/Moscow",
@@ -44,11 +41,10 @@ function slotsResponse(overrides: Partial<SlotsResponse> = {}): SlotsResponse {
 
 /** Мок config, справочника типов и сетки слотов одной настройкой. */
 function mockAll(slotsData: SlotsResponse): void {
-  api.GET.mockImplementation(async (path: string) => {
-    if (path === "/api/config") return mockResponse(config);
-    if (path === "/api/event-types") return mockResponse(eventTypes);
-    if (path === "/api/event-types/{id}/slots") return mockResponse(slotsData);
-    throw new Error(`Незамоканный GET ${path}`);
+  mockApi({
+    "/api/config": config,
+    "/api/event-types": eventTypes,
+    "/api/event-types/{id}/slots": slotsData,
   });
 }
 
@@ -110,10 +106,10 @@ describe("шаг 2 «Дата и время»", () => {
     const strip = await screen.findByRole("radiogroup", { name: /окно записи/ });
     await user.click(within(strip).getAllByRole("radio")[1]);
 
-    expect(api.GET).toHaveBeenCalledWith(
-      "/api/event-types/{id}/slots",
-      expect.objectContaining({ params: { path: { id: "et-15" }, query: { date: "2026-10-15" } } }),
-    );
+    expect(api.listSlots).toHaveBeenCalledWith({
+      path: { id: "et-15" },
+      query: { date: "2026-10-15" },
+    });
   });
 
   it("показывает сообщение, когда на день не осталось свободных слотов", async () => {
@@ -130,12 +126,8 @@ describe("шаг 2 «Дата и время»", () => {
   });
 
   it("показывает скелеты, пока слоты грузятся", async () => {
-    api.GET.mockImplementation(async (path: string) => {
-      if (path === "/api/config") return mockResponse(config);
-      if (path === "/api/event-types") return mockResponse(eventTypes);
-      if (path === "/api/event-types/{id}/slots") return new Promise(() => {});
-      throw new Error(`Незамоканный GET ${path}`);
-    });
+    mockApi({ "/api/config": config, "/api/event-types": eventTypes });
+    api.listSlots.mockImplementation(() => new Promise(() => {}));
     renderBook();
     await goToDateTimeStep();
 
@@ -143,19 +135,10 @@ describe("шаг 2 «Дата и время»", () => {
   });
 
   it("показывает ошибку чтения слотов и повторяет запрос по «Повторить»", async () => {
-    let failed = false;
-    api.GET.mockImplementation(async (path: string) => {
-      if (path === "/api/config") return mockResponse(config);
-      if (path === "/api/event-types") return mockResponse(eventTypes);
-      if (path === "/api/event-types/{id}/slots") {
-        if (!failed) {
-          failed = true;
-          throw new Error("network");
-        }
-        return mockResponse(slotsResponse());
-      }
-      throw new Error(`Незамоканный GET ${path}`);
-    });
+    mockApi({ "/api/config": config, "/api/event-types": eventTypes });
+    api.listSlots
+      .mockRejectedValueOnce(new Error("network"))
+      .mockResolvedValueOnce(mockResponse(slotsResponse()));
     renderBook();
     const user = await goToDateTimeStep();
 

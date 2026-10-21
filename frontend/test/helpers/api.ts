@@ -1,41 +1,43 @@
-import type { components } from "contracts";
+import type { Booking, EventType, ServiceConfig, SlotsResponse } from "contracts/types";
 import { vi } from "vitest";
 
-import type { ServiceConfig } from "../../src/api/config";
-
-type EventType = components["schemas"]["EventType"];
-type SlotsResponse = components["schemas"]["SlotsResponse"];
-
 /**
- * Мок сгенерированного клиента (`openapi-fetch`, ADR-0008) для компонентных
+ * Мок сгенерированного SDK (`@hey-api/openapi-ts`, ADR-0008) для компонентных
  * тестов. Тест подменяет модуль `src/api/client` этим моком:
  *
  * ```ts
  * vi.mock("../src/api/client", () => import("./helpers/api"));
  * ```
  *
- * Дальше ответы настраиваются через `api.GET` (например, `mockConfig`,
- * `mockEventTypes`, `mockSlots`) либо напрямую через `api.GET.mockImplementation`,
- * а между тестами состояние сбрасывается `resetApiMock()`.
+ * Ответы настраиваются по имени операции (`mockConfig`, `mockEventTypes`,
+ * `mockSlots`, `mockBookings`) либо напрямую через `api.<operation>`, а между
+ * тестами состояние сбрасывается `resetApiMock()`. Незамоканная операция
+ * отклоняется — тест не молчит о забытом запросе.
  */
 export const api = {
-  GET: vi.fn(),
-  POST: vi.fn(),
+  getConfig: vi.fn(),
+  listEventTypes: vi.fn(),
+  listSlots: vi.fn(),
+  listBookings: vi.fn(),
+  createEventType: vi.fn(),
+  createBooking: vi.fn(),
 };
 
-/** Сбрасывает вызовы и настройки мока клиента; вызывать в `beforeEach`. */
+/** Сбрасывает вызовы и настройки мока SDK; вызывать в `beforeEach`. */
 export function resetApiMock(): void {
-  api.GET.mockReset();
-  api.POST.mockReset();
+  for (const operation of Object.values(api)) {
+    operation.mockReset();
+    operation.mockRejectedValue(new Error("Незамоканная операция SDK"));
+  }
 }
 
-/** Успешный ответ в форме, которую возвращает `openapi-fetch`. */
+/** Успешный ответ в форме, которую возвращает сгенерированный SDK. */
 export function mockResponse<T>(data: T) {
   return { data, response: new Response(null, { status: 200 }) };
 }
 
 /**
- * Ошибочный ответ в форме `openapi-fetch`: `error` — разобранный конверт
+ * Ошибочный ответ в форме сгенерированного SDK: `error` — разобранный конверт
  * `{ error: { code, message, fields? } }` (ADR-0005), `response` — статус.
  */
 export function mockErrorResponse(
@@ -50,28 +52,41 @@ export function mockErrorResponse(
   };
 }
 
-/**
- * Настраивает ответы `GET` по пути. Любой незамоканный `GET` — ошибка, чтобы
- * тест не молчал о забытом запросе.
- */
-export function mockApi(routes: Record<string, unknown>): void {
-  api.GET.mockImplementation(async (path: string) => {
-    if (path in routes) return mockResponse(routes[path]);
-    throw new Error(`Незамоканный GET ${path}`);
-  });
+/** Чтения API по путям (соответствуют сгенерированным операциям). */
+export interface ApiRoutes {
+  "/api/config"?: ServiceConfig;
+  "/api/event-types"?: EventType[];
+  "/api/event-types/{id}/slots"?: SlotsResponse;
+  "/api/bookings"?: Booking[];
+}
+
+/** Настраивает несколько чтений одной настройкой; незаданные пути не трогает. */
+export function mockApi(routes: ApiRoutes): void {
+  if (routes["/api/config"] !== undefined) {
+    api.getConfig.mockResolvedValue(mockResponse(routes["/api/config"]));
+  }
+  if (routes["/api/event-types"] !== undefined) {
+    api.listEventTypes.mockResolvedValue(mockResponse(routes["/api/event-types"]));
+  }
+  if (routes["/api/event-types/{id}/slots"] !== undefined) {
+    api.listSlots.mockResolvedValue(mockResponse(routes["/api/event-types/{id}/slots"]));
+  }
+  if (routes["/api/bookings"] !== undefined) {
+    api.listBookings.mockResolvedValue(mockResponse(routes["/api/bookings"]));
+  }
 }
 
 /** Настраивает `GET /api/config` на успешный ответ с заданной конфигурацией. */
 export function mockConfig(config: ServiceConfig): void {
-  mockApi({ "/api/config": config });
+  api.getConfig.mockResolvedValue(mockResponse(config));
 }
 
 /** Настраивает `GET /api/event-types` на успешный ответ со списком типов. */
 export function mockEventTypes(eventTypes: EventType[]): void {
-  mockApi({ "/api/event-types": eventTypes });
+  api.listEventTypes.mockResolvedValue(mockResponse(eventTypes));
 }
 
 /** Настраивает `GET /api/event-types/{id}/slots` на успешный ответ с сеткой. */
 export function mockSlots(response: SlotsResponse): void {
-  mockApi({ "/api/event-types/{id}/slots": response });
+  api.listSlots.mockResolvedValue(mockResponse(response));
 }

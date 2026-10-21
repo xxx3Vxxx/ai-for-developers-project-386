@@ -1,10 +1,9 @@
-import type { components } from "contracts";
+import type { EventType, EventTypeRequest } from "contracts";
 import { useCallback, useEffect, useState } from "react";
 
 import { api } from "./client";
 
-export type EventType = components["schemas"]["EventType"];
-export type EventTypeRequest = components["schemas"]["EventTypeRequest"];
+export type { EventType, EventTypeRequest };
 
 /** Машинный код ошибки создания типа (ADR-0005, ADR-0010); незнакомые — как есть. */
 export type EventTypeErrorCode = "VALIDATION_ERROR" | "SERVICE_UNAVAILABLE" | "INTERNAL_ERROR";
@@ -27,7 +26,7 @@ export type CreateEventTypeResult =
  */
 export async function createEventType(body: EventTypeRequest): Promise<CreateEventTypeResult> {
   try {
-    const { data, error } = await api.POST("/api/event-types", { body });
+    const { data, error } = await api.createEventType({ body });
     if (error) return { ok: false, error: error.error };
     if (!data) return { ok: false, error: { code: "SERVICE_UNAVAILABLE", message: "" } };
     return { ok: true, eventType: data };
@@ -40,9 +39,9 @@ export async function createEventType(body: EventTypeRequest): Promise<CreateEve
 export type EventTypesState =
   { status: "loading" } | { status: "ready"; eventTypes: EventType[] } | { status: "error" };
 
-/** Читает `GET /api/event-types` сгенерированным клиентом (ADR-0008). */
+/** Читает `GET /api/event-types` сгенерированным SDK (ADR-0008). */
 async function fetchEventTypes(): Promise<EventType[]> {
-  const { data, error } = await api.GET("/api/event-types");
+  const { data, error } = await api.listEventTypes();
   if (error) throw error;
   return data;
 }

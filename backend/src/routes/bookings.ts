@@ -1,4 +1,4 @@
-import type { components } from "contracts";
+import type { Booking } from "contracts/types";
 import type { FastifyInstance } from "fastify";
 
 import { createBooking } from "../bookings.js";
@@ -13,8 +13,6 @@ import {
   validateGuestName,
   validateStart,
 } from "../validation.js";
-
-type Booking = components["schemas"]["Booking"];
 
 const MINUTE = 60_000;
 

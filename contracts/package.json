@@ -6,21 +6,33 @@
   "description": "TypeSpec-контракты HTTP API сервиса «Календарь звонков» (ADR-0008)",
   "exports": {
     ".": {
-      "types": "./generated/openapi.d.ts"
+      "types": "./generated/index.ts",
+      "import": "./generated/index.ts",
+      "default": "./generated/index.ts"
+    },
+    "./client": {
+      "types": "./generated/client.gen.ts",
+      "import": "./generated/client.gen.ts",
+      "default": "./generated/client.gen.ts"
+    },
+    "./types": {
+      "types": "./generated/types.gen.ts",
+      "import": "./generated/types.gen.ts",
+      "default": "./generated/types.gen.ts"
     }
   },
   "scripts": {
-    "generate": "tsp compile . && openapi-typescript tsp-output/@typespec/openapi3/openapi.yaml -o generated/openapi.d.ts",
+    "generate": "tsp compile . && openapi-ts",
     "test": "vitest run",
     "typecheck": "tsc -p tsconfig.json",
     "clean": "rm -rf tsp-output generated"
   },
   "devDependencies": {
+    "@hey-api/openapi-ts": "^0.99.0",
     "@types/node": "^26.6.4",
     "@typespec/compiler": "1.17.0",
     "@typespec/http": "1.17.0",
     "@typespec/openapi3": "1.17.0",
-    "openapi-typescript": "^7.13.0",
     "vitest": "^5.0.3"
   }
 }

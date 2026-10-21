@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 
-import type { components } from "contracts";
+import type { EventType } from "contracts/types";
 import type { FastifyInstance } from "fastify";
 
 import type { Config } from "../config.js";
@@ -13,8 +13,6 @@ import {
   validateTitle,
   workWindowMinutes,
 } from "../validation.js";
-
-type EventType = components["schemas"]["EventType"];
 
 /**
  * Регистрирует `GET /api/event-types` — справочник типов событий в

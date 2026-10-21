@@ -5,10 +5,12 @@ import { describe, expect, it } from "vitest";
 
 /**
  * Пиннит пайплайн контрактов (ADR-0008): артефакты не коммитятся, поэтому тест
- * проверяет результат генерации (`npm run contracts:generate`), а не источник.
+ * проверяет результат генерации (`npm run contracts:generate`), а не источник:
+ * TypeSpec → OpenAPI 3.0.0 → типы и клиентский SDK (`@hey-api/openapi-ts`).
  */
 const specUrl = new URL("../tsp-output/@typespec/openapi3/openapi.yaml", import.meta.url);
-const typesUrl = new URL("../generated/openapi.d.ts", import.meta.url);
+const typesUrl = new URL("../generated/types.gen.ts", import.meta.url);
+const sdkUrl = new URL("../generated/sdk.gen.ts", import.meta.url);
 
 function readArtifact(url: URL): string {
   const path = fileURLToPath(url);
@@ -37,7 +39,10 @@ describe("пайплайн контрактов", () => {
   });
 
   it("генерирует типы с путём /api/event-types", () => {
-    expect(readArtifact(typesUrl)).toContain('"/api/event-types"');
+    const types = readArtifact(typesUrl);
+
+    expect(types).toContain('"/api/event-types"');
+    expect(types).toMatch(/export type EventType = \{/);
   });
 
   it("описывает GET /api/event-types/{id}/slots и схему SlotsResponse", () => {
@@ -63,5 +68,21 @@ describe("пайплайн контрактов", () => {
 
   it("генерирует типы с путём /api/bookings", () => {
     expect(readArtifact(typesUrl)).toContain('"/api/bookings"');
+  });
+
+  it("генерирует клиентский SDK со всеми операциями", () => {
+    const sdk = readArtifact(sdkUrl);
+
+    for (const operation of [
+      "getConfig",
+      "listEventTypes",
+      "listSlots",
+      "listBookings",
+      "createEventType",
+      "createBooking",
+    ]) {
+      expect(sdk).toContain(`export const ${operation} =`);
+    }
+    expect(sdk).toContain('"/api/bookings"');
   });
 });

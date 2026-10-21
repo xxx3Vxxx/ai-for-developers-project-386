@@ -1,9 +1,29 @@
-import createClient from "openapi-fetch";
-
-import type { paths } from "contracts";
+import {
+  createBooking,
+  createEventType,
+  getConfig,
+  listBookings,
+  listEventTypes,
+  listSlots,
+} from "contracts";
+import { client } from "contracts/client";
 
 /**
- * Типизированный клиент к HTTP API (ADR-0008). Пути в спеке уже включают
- * префикс `/api`, поэтому `baseUrl` не задаётся — запросы идут относительно origin.
+ * Клиентский SDK, сгенерированный из OpenAPI (`@hey-api/openapi-ts`, ADR-0008)
+ * и настроенный на текущий origin: пути в спеке уже включают префикс `/api`,
+ * поэтому запросы идут относительно origin, а не на адрес из спеки.
  */
-export const api = createClient<paths>();
+client.setConfig({ baseUrl: "" });
+
+/**
+ * Единая точка доступа фронтенда к API. Здесь собираются сгенерированные
+ * операции SDK; компоненты и хуки не создают клиент руками.
+ */
+export const api = {
+  getConfig,
+  listEventTypes,
+  listSlots,
+  listBookings,
+  createEventType,
+  createBooking,
+};

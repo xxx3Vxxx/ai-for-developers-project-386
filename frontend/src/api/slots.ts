@@ -1,18 +1,19 @@
-import type { components } from "contracts";
+import type { Slot } from "contracts";
 import { useCallback, useEffect, useState } from "react";
 
 import { api } from "./client";
 
-export type Slot = components["schemas"]["Slot"];
+export type { Slot };
 
 /** Состояние чтения сетки слотов дня. */
 export type SlotsState =
   { status: "loading" } | { status: "ready"; slots: Slot[] } | { status: "error" };
 
-/** Читает `GET /api/event-types/:id/slots?date=` сгенерированным клиентом (ADR-0008). */
+/** Читает `GET /api/event-types/:id/slots?date=` сгенерированным SDK (ADR-0008). */
 async function fetchSlots(eventTypeId: string, date: string): Promise<Slot[]> {
-  const { data, error } = await api.GET("/api/event-types/{id}/slots", {
-    params: { path: { id: eventTypeId }, query: { date } },
+  const { data, error } = await api.listSlots({
+    path: { id: eventTypeId },
+    query: { date },
   });
   if (error) throw error;
   return data.slots;
